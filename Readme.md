@@ -22,13 +22,13 @@
     - In RGui unter Datei>Verzeichnis wechseln
     - In Rstudio unter Session>Set Working Directory>Choose Directory
 2.  Rskript einlesen (copy/paste oder Befehl `source("Artenlistenskript.r")`)
-  - nun steht die Funktion 'artenliste()' zur Verfügung. 
-      - mit dem Argument 'daten=' gibt man an wie die Datentabelle heisst. Beispiel: 'artenliste( daten = "daten.csv")
+  - nun steht die Funktion `artenliste()` zur Verfügung. 
+      - mit dem Argument `daten=` gibt man an wie die Datentabelle heisst. Beispiel: `artenliste( daten = "daten.csv")`
 
   - Optional stehen noch weitere Argumente zur Verfügung:
-    - 'titel=': Was soll nebst dem Plotnamen noch im Titel stehen. Standardmässig besteht die Titelzeile aus dem Plotname und dem aktuellen Monat und Jahr. 
-    - 'kopf=': Was ist der Name der Datei die den Kopf enthätl. Standart ist "kopf.md".
-    - 'fuss=': Was soll nebst dem Plotnamen noch in der Fusszeile stehen. Standart ist der Titel.
+    - `titel=`: Was soll nebst dem Plotnamen noch im Titel stehen. Standardmässig besteht die Titelzeile aus dem Plotname und dem aktuellen Monat und Jahr. 
+    - `kopf=`: Was ist der Name der Datei die den Kopf enthätl. Standart ist "kopf.md".
+    - `fuss=`: Was soll nebst dem Plotnamen noch in der Fusszeile stehen. Standart ist der Titel.
     - weiter Argumente sind unter *Probleme* beschrieben.
         -  Beispiel: `artenliste(daten = "daten.csv", kopf = "kopf.md", titel = "Vegetationsaufnahme SADE Grünland Alb (2018)", fuss="SADE 2018")`
 
