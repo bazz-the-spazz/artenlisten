@@ -7,4 +7,3 @@ Moosschicht        &    \% & Gestein     &    \% & Aufnahmefläche & 4m\textsupe
 Flechtenschicht    &    \% & Offene Erde &    \% &                &  \\\hline \end{tabularx}
  \hfill \break
 
-
