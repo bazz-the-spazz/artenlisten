@@ -1,0 +1,57 @@
+\documentclass[12pt,a4paper, notitlepage]{article}
+\usepackage{lmodern} %use fonts
+\usepackage{fullpage}  % make page usable
+
+%these were already there
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage[$for(microtypeoptions)$$microtypeoptions$$sep$,$endfor$]{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\PassOptionsToPackage{hyphens}{url} % url is loaded by hyperref
+\usepackage[unicode=true]{hyperref}
+
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx} %use these to stretch the tables
+
+% Fix footnotes in tables (requires footnote package)
+\IfFileExists{footnote.sty}{\usepackage{footnote}\makesavenoteenv{long table}}{}
+
+\renewcommand{\familydefault}{\sfdefault} % make sans serif standard
+
+\usepackage[table]{xcolor} % make alternating rows grey
+
+\usepackage{lastpage}  % to display pages of.
+\usepackage{fancyhdr}
+\pagestyle{fancy} 
+  \fancyhf{}% Clear header/footer
+\renewcommand{\headrulewidth}{0pt}  % keine linien
+\renewcommand{\footrulewidth}{0pt}  %
+%\fancyfoot[R]{\thepage\ / \pageref{LastPage} \leftmark}
+\fancyfoot[R]{\thepage\ \leftmark}  % last page doesn't work anymore when you convert all files together to pdf
+
+%\usepackage{showframe} %set printing area
+\textheight = 780pt
+\voffset = -50pt
+\footskip = 10pt
+\hoffset=-10pt
+\textwidth = 500pt
+
+\begin{document}
+\rowcolors{2}{gray!25}{white} % choose color for tables
+
+$body$
+
+
+\end{document}
+
