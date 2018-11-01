@@ -36,7 +36,7 @@
 
 4.  In **pandoc** (Hilfe: http://pandoc.org/getting-started.html)
      1. Öffne Programm `Windows PowerShell( x64)`
-     2. wechsle zum Ordner mit den Skripts: `cd 'N:\Documents\Artenlistenskript von Baschi\'` 
+     2. wechsle zum Ordner mit den Skripts: `cd 'N:\Documents\Artenlistenskript\'` 
         - Den Pfad zum Ordner findet man auch wenn man im Explorer im Ordner rechte Maustaste>Properties unter Location nachschaut.
     3. folgenden *Befehl* eingeben: `pandoc -o Artenlisten.pdf  --template=preamble.txt ./Artenliste.md`
     4. `Artenlisten.pdf` erscheint. Bravo!
