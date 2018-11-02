@@ -26,13 +26,13 @@
       - mit dem Argument `daten=` gibt man an wie die Datentabelle heisst. Beispiel: `artenliste( daten = "daten.csv")`
 
   - Optional stehen noch weitere Argumente zur Verfügung:
-    - `titel=`: Was soll nebst dem Plotnamen noch im Titel stehen. Standardmässig besteht die Titelzeile aus dem Plotname und dem aktuellen Monat und Jahr. 
-    - `kopf=`: Was ist der Name der Datei die den Kopf enthätl. Standart ist "kopf.md".
-    - `fuss=`: Was soll nebst dem Plotnamen noch in der Fusszeile stehen. Standart ist der Titel.
+    - `titel=`: Was soll nebst dem Plotnamen noch im Titel stehen. Standardmässig besteht die Titelzeile aus dem Plotname und dem aktuellen Monat und Jahr!
+    - `kopf=`: Was ist der Name der Datei die den Kopf enthält. Standard ist "kopf.md".
+    - `fuss=`: Was soll nebst dem Plotnamen noch in der Fusszeile stehen. Standard ist der Titel.
     - weiter Argumente sind unter *Probleme* beschrieben.
         -  Beispiel: `artenliste(daten = "daten.csv", kopf = "kopf.md", titel = "Vegetationsaufnahme SADE Grünland Alb (2018)", fuss="SADE 2018")`
 
-3.  Nach dem Ausführen des Skripts sollte sich im Ordner nun für eine Datei names `Artenliste.md` befinden.
+3.  Nach dem Ausführen des Skripts sollte sich im Ordner nun für eine Datei namens `Artenliste.md` befinden.
 
 4.  In **pandoc** (Hilfe: http://pandoc.org/getting-started.html)
      1. Öffne Programm `Windows PowerShell( x64)`
