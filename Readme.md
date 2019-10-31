@@ -9,7 +9,7 @@
 
 - Daten:
   - Liste der Arten pro Plot in Spalten. Die erste Zeile bezeichnet die Namen der Plots. Im `csv`-Format gespeichert.
-  - Optional: Textdatei für den Kopf (Inhalt zwischen Titel und Atrentabelle). Sollte das Zeichen `]` nicht enthalten. 
+  - Optional: Textdatei für den Kopf (Inhalt zwischen Titel und Artentabelle). Sollte das Zeichen `]` nicht enthalten. 
 - Skripte
   - das `Artenlistenskript.r` (enthält das R skript)
   - die Datei `kopf.md` (enthält die Tabelle nach dem Titel)
