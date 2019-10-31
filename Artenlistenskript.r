@@ -26,6 +26,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 		end <- "\\end{tabularx}"  # this ends the table
 		arten <- as.character(data[,i])   # this is the list of speceis
 		arten <- arten[which(arten!="")]   #cleanup
+		arten <- unique(arten)            # remove duplicates
 		arten <- gsub("_"," ",arten)    # remove underlines
 		arten <- sort(arten)          # sort
 
