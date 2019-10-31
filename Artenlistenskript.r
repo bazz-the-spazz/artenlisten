@@ -16,7 +16,7 @@ artenliste <- function(daten, plotsubset, kopf="kopf.md", titel=format(Sys.time(
 	data <- read.csv(daten)    # .csv file einlesen
 	if(ncol(data) ==1) data <- read.csv2(daten)   # falls nur eine Spalte erkannt wurde mit csv 2 probieren
 
-  if(!missing(plotsubset)) data <- data[,plotsubset]
+  if(!missing(plotsubset)) data <- data[,plotsubset]  # choose a subset of plots to be used
 
 	x <- character()
 	for (i in 1:ncol(data)){ #loop for each column (=each Plot) of the data
