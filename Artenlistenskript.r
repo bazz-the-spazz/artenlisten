@@ -5,7 +5,7 @@
 # artenliste(data = read.csv("Untitled 1.csv"), kopf = "kopf.md")
 
 
-artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"), fuss="dfhdfahadh", fontsize="\\large", table.length.adjust=0){
+artenliste <- function(daten, plotsubset, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"), fuss="dfhdfahadh", fontsize="\\large", table.length.adjust=0, outputfile="Artenlisten.md"){
 	if(file.exists(kopf)){  # lade kopf  # This is the stuff that's written between the title and the species list
 		head <- as.character(read.table(kopf, sep="[")[,1])
 	} else {
@@ -16,7 +16,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 	data <- read.csv(daten)    # .csv file einlesen
 	if(ncol(data) ==1) data <- read.csv2(daten)   # falls nur eine Spalte erkannt wurde mit csv 2 probieren
 
-
+  if(!missing(plotsubset)) data <- data[,plotsubset]
 
 	x <- character()
 	for (i in 1:ncol(data)){ #loop for each column (=each Plot) of the data
@@ -26,7 +26,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 		end <- "\\end{tabularx}"  # this ends the table
 		arten <- as.character(data[,i])   # this is the list of speceis
 		arten <- arten[which(arten!="")]   #cleanup
-		arten <- unique(arten)            # remove duplicates
+    arten <- unique(arten)            # remove duplicates
 		arten <- gsub("_"," ",arten)    # remove underlines
 		arten <- sort(arten)          # sort
 
@@ -97,6 +97,6 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 	x <- gsub("Ö", '"O', x)
 	x <- gsub("Ü", '"U', x)
 	x <- gsub("ß", '"s', x)
-
-	write(x = x, file = "Artenliste.md", ncolumns = 1)
+  
+	write(x = x, file = outputfile, ncolumns = 1)
 }
