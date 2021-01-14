@@ -12,7 +12,7 @@
   - Optional: Textdatei für den Kopf (Inhalt zwischen Titel und Artentabelle). Sollte das Zeichen `]` nicht enthalten. 
 - Skripte
   - das `Artenlistenskript.r` (enthält das R skript)
-  - die Datei `kopf.md` (enthält die Tabelle nach dem Titel)
+  - die Datei `kopf.md` (enthält die Tabelle nach dem Titel, Format ist LaTeX)
   - die Datei `preamble.txt` enthält die Formatierung für das PDF
 
 ## Vorgehen
@@ -29,17 +29,18 @@
     - `titel=`: Was soll nebst dem Plotnamen noch im Titel stehen. Standardmässig besteht die Titelzeile aus dem Plotname und dem aktuellen Monat und Jahr!
     - `kopf=`: Was ist der Name der Datei die den Kopf enthält. Standard ist "kopf.md".
     - `fuss=`: Was soll nebst dem Plotnamen noch in der Fusszeile stehen. Standard ist der Titel.
-    - weiter Argumente sind unter *Probleme* beschrieben.
-        -  Beispiel: `artenliste(daten = "daten.csv", kopf = "kopf.md", titel = "Vegetationsaufnahme SADE Grünland Alb (2018)", fuss="SADE 2018")`
+    - ***Neu für 2021***`wald=`: Handelt es sich um Waldplots? und `waldextrablatt=`: soll ein leeres Blatt angefügt werden wenn nicht mehr viel Platz (~8 Zeilen) übrig sind.
+    
+    **Beispiel:** `artenliste(daten = "daten.csv", kopf = "kopf.md", titel = "Vegetationsaufnahme SADE Grünland Alb (2018)", fuss="SADE 2018", wald=FALSE)`
 
 3.  Nach dem Ausführen des Skripts sollte sich im Ordner nun für eine Datei namens `Artenliste.md` befinden.
 
 4.  In **pandoc** (Hilfe: http://pandoc.org/getting-started.html)
-     1. Öffne Programm `Windows PowerShell( x64)`
-     2. wechsle zum Ordner mit den Skripts: `cd 'N:\Documents\Artenlistenskript\'` 
+     - Öffne Programm `Windows PowerShell( x64)`
+     - wechsle zum Ordner mit den Skripts: `cd 'N:\Documents\Artenlistenskript\'` 
         - Den Pfad zum Ordner findet man auch wenn man im Explorer im Ordner rechte Maustaste>Properties unter Location nachschaut.
-    3. folgenden *Befehl* eingeben: `pandoc -o Artenlisten.pdf  --template=preamble.txt ./Artenliste.md`
-    4. `Artenlisten.pdf` erscheint. Bravo!
+    - folgenden *Befehl* eingeben: `pandoc -o Artenlisten.pdf  --template=preamble.txt ./Artenliste.md`
+    - `Artenlisten.pdf` erscheint. Bravo!
 
 ## Probleme
 
