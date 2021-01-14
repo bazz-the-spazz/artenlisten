@@ -5,7 +5,7 @@
 # artenliste(data = read.csv("Untitled 1.csv"), kopf = "kopf.md")
 
 
-artenliste <- function(daten, plotsubset, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"), fuss="dfhdfahadh", fontsize="\\large", table.length.adjust=0, outputfile="Artenlisten.md"){
+artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"), fuss="dfhdfahadh", fontsize="\\large", table.length.adjust=0, wald=FALSE, waldextrablatt=T, output="Artenliste.md"){
 	if(file.exists(kopf)){  # lade kopf  # This is the stuff that's written between the title and the species list
 		head <- as.character(read.table(kopf, sep="[")[,1])
 	} else {
@@ -16,51 +16,88 @@ artenliste <- function(daten, plotsubset, kopf="kopf.md", titel=format(Sys.time(
 	data <- read.csv(daten)    # .csv file einlesen
 	if(ncol(data) ==1) data <- read.csv2(daten)   # falls nur eine Spalte erkannt wurde mit csv 2 probieren
 
-  if(!missing(plotsubset)) data <- data[,plotsubset]  # choose a subset of plots to be used
 
-	x <- character()
+
+  x <- character()
 	for (i in 1:ncol(data)){ #loop for each column (=each Plot) of the data
 
 		size <- fontsize      # this is the latex command for the font size (eg. \\tiny, \\huge)
 		header <- "\\begin{tabularx}{\\textwidth}{|l|X|l|X|} \\hline"    # this is the header for the table for the species list
+		if(wald) header <- c("\\begin{tabularx}{\\textwidth}{|l|X|X|X|X|} \\hline",
+		                     "\\textbf{Arten} \\phantom{ChrysospleniumChrysospleniumChrysosplen} & \\textbf{K} & \\textbf{S}\\tiny{<5m} & \\textbf{B1}\\tiny{<10} & \\textbf{B2}\\tiny{>10m} \\\\\\hline") # this is the wald header
 		end <- "\\end{tabularx}"  # this ends the table
 		arten <- as.character(data[,i])   # this is the list of speceis
 		arten <- arten[which(arten!="")]   #cleanup
-    arten <- unique(arten)            # remove duplicates
-		arten <- gsub("_"," ",arten)    # remove underlines
-		arten <- sort(arten)          # sort
+		arten <- unique(arten)  #cleanup
+    arten <- gsub("_"," ",arten)    # remove underlines
+    arten <- sort(arten)          # sort
 
 
 		cutoff <- 42-length(head) + table.length.adjust   # this is how many rows the list has on the 1st page. It gets shorter when the head is longer
 		cutoff2 <- 42 + table.length.adjust               # this is the number of rows on the subsequent pages.
 
 
-		## Generate the title, extra code is so that can also be displayed in the footer including page number Plotname and date
-		totpage <- if(length(arten)<(2*cutoff)) {1} else { ceiling((length(arten)-(2*cutoff))/(2*cutoff2))+1 }
+	## Generate the title, extra code is so that can also be displayed in the footer including page number Plotname and date
+	totpage <- if(length(arten)<(2*cutoff)) {1} else { ceiling((length(arten)-(2*cutoff))/(2*cutoff2))+1 }
 
-		if(fuss=="dfhdfahadh") {fuss <- titel} else {paste(names(data)[i], fuss)}
+	if(wald) { # in forest we have to adjust the cutoff
+	  cutoff  <- cutoff -1
+	  cutoff2 <- cutoff2-1
+          totpage <- if(length(arten)<(cutoff)) {1} else { ceiling((length(arten)-(cutoff))/(cutoff2))+1 }
+	}
 
-		title <- paste("\\centering \\section*{", names(data)[i]," ", titel, "}","\\markboth{/", totpage, " | ", names(data)[i]," ",fuss, "}{", names(data)[i]," ",fuss,"}", sep="")
-		##
+  if(fuss=="dfhdfahadh") {fuss <- titel} else {paste(names(data)[i], fuss)}
 
-		## Generate the tables
-		if(length(arten)<cutoff){   # how to generate the list when less species than the short cutoff
+
+
+	## Generate the tables
+	if(wald){
+
+	  arten <- paste(arten, "& \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline")
+
+	  if(length(arten) < cutoff) arten <- c(arten, rep("\\phantom{--} & \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline", cutoff-length(arten) ))  # FALLS Artenliste kürzer als erster Cuttoff, ergänzen mit leeren zeilen
+	  table <- c(header, arten[1:cutoff], end)  # Create first table
+
+	  if(length(arten)> cutoff ){ # Create more tables when first page is full
+
+	    arten <- arten[(cutoff+1):length(arten)] # Artenliste kürzen
+	    while(length(arten) > cutoff2){ # When Cutoff2 is not enough ad table page
+	      table <- c(table, "\\newpage", header, arten[1:cutoff2], end)
+	      arten <- arten[(cutoff2+1):length(arten)]
+	    }
+
+	    if(length(arten) < cutoff2) arten <- c(arten, rep("\\phantom{--} & \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline", cutoff2-length(arten) ))  # FALLS Artenliste kürzer als erster Cuttoff, ergänzen mit leeren zeilen
+	    table <- c(table, "\\newpage", header, arten, end)
+	  }
+
+	  if( waldextrablatt &
+	    table[length(table)-8] != "\\phantom{--} & \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline"
+	  ) {
+	    table <- c(table, "\\newpage", header, rep("\\phantom{--} & \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline", cutoff2), end)
+	    totpage <- totpage+1
+	    }
+	}
+
+	title <- paste("\\centering \\section*{", names(data)[i]," ", titel, "}","\\markboth{/", totpage, " | ", names(data)[i]," ",fuss, "}{", names(data)[i]," ",fuss,"}", sep="")
+	##
+
+		if(length(arten)<cutoff & !wald){   # how to generate the list when less species than the short cutoff
 			arten <- c(arten, rep("", (cutoff-length(arten) )))
 			arten <- paste( "\\phantom{--} &", arten, "& \\phantom{--}  & \\\\\\hline")
 			table <- c(header,arten,end,"")  # table consists of header, list and end
 		}
 
-		if(length(arten)>cutoff & length(arten)<(cutoff*2)){ #wenn die Arten die zeilenanzahl von cutoff ÃŒberschreiten-> 2 zeilen machen
+		if(length(arten)>cutoff & length(arten)<(cutoff*2)  & !wald){ #wenn die Arten die zeilenanzahl von cutoff überschreiten-> 2 zeilen machen
 			a1 <- arten[1:cutoff]
 			a2 <- arten[(cutoff+1):length(arten)]
 			if(length(a1) !=length(a2) ) a2 <- c(a2, rep("", (length(a1)-length(a2) )))
 			arten <- paste( "\\phantom{--} &", a1, "& \\phantom{--} &", a2, "\\\\\\hline")
 			table <- c(header,arten,end,"")
-		}
+			}
 
-		if(length(arten)>(cutoff*2)){   #wenn die Arten die zeilenanzahl von erster seite ÃŒberschreiten-> mehrere Tabellen machen
+		if(length(arten)>(cutoff*2)  & !wald){   #wenn die Arten die zeilenanzahl von erster seite überschreiten-> mehrere Tabellen machen
 			table <- character()
-			art <- paste( "\\phantom{--} &", arten[1:cutoff], "& \\phantom{--} &", arten[(cutoff+1):(cutoff*2)], "\\\\\\hline")  # first fill the table on page 1 with cutoff NÂ°1
+			art <- paste( "\\phantom{--} &", arten[1:cutoff], "& \\phantom{--} &", arten[(cutoff+1):(cutoff*2)], "\\\\\\hline")  # first fill the table on page 1 with cutoff N°1
 			table <-c(table, header,art,end,"")
 
 			for(j in 1:ceiling((length(arten)-(2*cutoff))/(cutoff2*2)) ){
@@ -84,19 +121,19 @@ artenliste <- function(daten, plotsubset, kopf="kopf.md", titel=format(Sys.time(
 				}
 			}
 		}
-		##
-		x = c(x, c("\\setcounter{page}{1}", title, "", head, "", size, table, "\\newpage"))
+	##
+	x = c(x, c("\\setcounter{page}{1}", title, "", head, "", size, table, "\\newpage"))
 		# write(x = c("\\setcounter{page}{1}", title, "", head, "", size, table, "\\newpage"), file = paste("./md/",names(data)[i], ".md", sep=""), ncolumns = 1)  # write the md file
 
 	}
-	# Correct the Umlauts
-	x <- gsub("ä", '"a', x)
-	x <- gsub("ö", '"o', x)
-	x <- gsub("ü", '"u', x)
-	x <- gsub("Ä", '"A', x)
-	x <- gsub("Ö", '"O', x)
-	x <- gsub("Ü", '"U', x)
-	x <- gsub("ß", '"s', x)
-  
-	write(x = x, file = outputfile, ncolumns = 1)
+  # Correct the Umlauts
+#  x <- gsub("?", '"a', x)
+#  x <- gsub("?", '"o', x)
+#  x <- gsub("?", '"u', x)
+#  x <- gsub("?", '"A', x)
+#  x <- gsub("?", '"O', x)
+#  x <- gsub("?", '"U', x)
+#  x <- gsub("?", '"ss', x)
+
+  write(x = x, file = output, ncolumns = 1)
 }
