@@ -55,18 +55,18 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 
 	  arten <- paste(arten, "& \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline")
 
-	  if(length(arten) < cutoff) arten <- c(arten, rep("\\phantom{--} & \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline", cutoff-length(arten) ))  # FALLS Artenliste kürzer als erster Cuttoff, ergänzen mit leeren zeilen
+	  if(length(arten) < cutoff) arten <- c(arten, rep("\\phantom{--} & \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline", cutoff-length(arten) ))  # FALLS Artenliste kÃ¼rzer als erster Cuttoff, ergÃ¤nzen mit leeren zeilen
 	  table <- c(header, arten[1:cutoff], end)  # Create first table
 
 	  if(length(arten)> cutoff ){ # Create more tables when first page is full
 
-	    arten <- arten[(cutoff+1):length(arten)] # Artenliste kürzen
+	    arten <- arten[(cutoff+1):length(arten)] # Artenliste kÃ¼rzen
 	    while(length(arten) > cutoff2){ # When Cutoff2 is not enough ad table page
 	      table <- c(table, "\\newpage", header, arten[1:cutoff2], end)
 	      arten <- arten[(cutoff2+1):length(arten)]
 	    }
 
-	    if(length(arten) < cutoff2) arten <- c(arten, rep("\\phantom{--} & \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline", cutoff2-length(arten) ))  # FALLS Artenliste kürzer als erster Cuttoff, ergänzen mit leeren zeilen
+	    if(length(arten) < cutoff2) arten <- c(arten, rep("\\phantom{--} & \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline", cutoff2-length(arten) ))  # FALLS Artenliste kÃ¼rzer als erster Cuttoff, ergÃ¤nzen mit leeren zeilen
 	    table <- c(table, "\\newpage", header, arten, end)
 	  }
 
@@ -87,7 +87,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 			table <- c(header,arten,end,"")  # table consists of header, list and end
 		}
 
-		if(length(arten)>cutoff & length(arten)<(cutoff*2)  & !wald){ #wenn die Arten die zeilenanzahl von cutoff überschreiten-> 2 zeilen machen
+		if(length(arten)>cutoff & length(arten)<(cutoff*2)  & !wald){ #wenn die Arten die zeilenanzahl von cutoff Ã¼berschreiten-> 2 zeilen machen
 			a1 <- arten[1:cutoff]
 			a2 <- arten[(cutoff+1):length(arten)]
 			if(length(a1) !=length(a2) ) a2 <- c(a2, rep("", (length(a1)-length(a2) )))
@@ -95,9 +95,9 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 			table <- c(header,arten,end,"")
 			}
 
-		if(length(arten)>(cutoff*2)  & !wald){   #wenn die Arten die zeilenanzahl von erster seite überschreiten-> mehrere Tabellen machen
+		if(length(arten)>(cutoff*2)  & !wald){   #wenn die Arten die zeilenanzahl von erster seite Ã¼berschreiten-> mehrere Tabellen machen
 			table <- character()
-			art <- paste( "\\phantom{--} &", arten[1:cutoff], "& \\phantom{--} &", arten[(cutoff+1):(cutoff*2)], "\\\\\\hline")  # first fill the table on page 1 with cutoff N°1
+			art <- paste( "\\phantom{--} &", arten[1:cutoff], "& \\phantom{--} &", arten[(cutoff+1):(cutoff*2)], "\\\\\\hline")  # first fill the table on page 1 with cutoff NÂ°1
 			table <-c(table, header,art,end,"")
 
 			for(j in 1:ceiling((length(arten)-(2*cutoff))/(cutoff2*2)) ){
@@ -137,3 +137,149 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 
   write(x = x, file = output, ncolumns = 1)
 }
+
+
+# create eingabeformular
+eingabeformular <- function(daten.csv, explo, kopf, wald=F, filename = "eingabeformular.xlsx"){
+  library(openxlsx)
+  d <- read.csv(daten.csv)
+  if(!missing(explo)) d <- d[, which(substr(names(d), 1,1)==explo)]
+
+  l <- character()
+  for( i in 1:ncol(d)){
+    l <- c(l,
+      paste("Plot_", names(d)[i], sep = ""),
+      if(wald) "Layer",
+      if(!missing(kopf)) kopf,
+      sort(unique(d[d[,i]!="",i])),
+      rep("", 5)
+    )
+  }
+  
+  plots <- do.call(rbind, strsplit(l[substr(l, 1,5)=="Plot_"], split = "Plot_"))[,2]
+  I <- 1
+  i <- 1
+  lpl <- character()
+  for(i in 1:length(plots)){
+    lpl[I] <- plots[i]
+    I <- I+1
+    while( substr(l[I], 1,5) != "Plot_" ){
+      lpl[I] <- plots[i]
+      I <- I+1
+      if(I > length(l)) break
+    }
+    
+  }
+  if(wald){
+    l <- data.frame(lpl, l, k=character(length(l)), s=character(length(l)), b1=character(length(l)), b2=character(length(l)))
+    l$s[which(l$l=="Layer")] <- "S"  
+    l$k[which(l$l=="Layer")] <- "K"  
+    l$b1[which(l$l=="Layer")] <- "B1"  
+    l$b2[which(l$l=="Layer")] <- "B2"  
+  } else {
+    l <- data.frame(lpl, l)
+  }
+  names(l) <- NULL
+  headStyle <- createStyle(fontColour =  "#a3e8ff", bgFill = "#3a2d0d", textDecoration="bold")
+  wb <- createWorkbook()
+  addWorksheet(wb, "Sheet 1")
+  writeData(wb, sheet = 1, x = l, colNames = F)
+  formating <- which(substr(l[,2], 1,4)=="Plot")
+  for(i in 1:length(formating)) addStyle(wb, sheet = 1, cols=1:7, rows=formating[i], style = headStyle)
+  setColWidths(wb, sheet = 1, cols = 1:ncol(l), widths =  c("auto", "auto", if(ncol(l)>2) rep(5, ncol(l)-2)) )
+  saveWorkbook(wb, filename, overwrite = TRUE)
+}
+
+# create.eingabeformular(daten.csv = "Species_2017-2020_for_Artenbogen.csv", kopf = "Deckungsgrad", wald = T)
+
+
+
+## read formular and create big table
+eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx", kopf, outputfilename.xslx ){
+
+  require(openxlsx)
+  
+  d <- read.xlsx( inputfilename.xlsx , colNames = F)
+  d <- d[,2:ncol(d)]
+  names(d)[1] <- "V1"
+  # find where are the plotnames
+  pn <- which(substr(d[,1], 1, 5) == "Plot_"  )
+  pn <- c(pn, nrow(d))
+  
+  l <- list()
+  for(i in 1:(length(pn)-1)) l[[i]] <- d[(pn[i]+1):(pn[i+1]-1),]
+  names(l) <- d[pn[1:(length(pn)-1)],1]
+  
+  if(ncol(d)>2){
+    ll <- list()
+    I <- 1
+    for(i in 1:length(l)){
+      for(j in 2:ncol(d)){
+        ll[[I]] <- data.frame(V1= l[[i]][,1], V2= l[[i]][,j])
+        names(ll)[I] <- paste( names(l)[i], ll[[I]][1,2], sep= "_")
+        ll[[I]] <- ll[[I]][-1,]
+        # ll[[I]][,2] <- as.numeric(as.character(ll[[I]][,2]))
+        I <- I+1
+      }
+    }
+    l <- ll
+  }
+  if(!missing(kopf) & is.numeric(kopf)) kopf <- l[[1]][kopf,1]
+  if(!missing(kopf)) if(!(identical(kopf %in% d[,1] , rep(TRUE, length(kopf))))) cat("Angegebene Kopfdaten nicht in Datei! \n")
+  
+  # Warn if there are non numeric characters in data
+  ch <- as.character(do.call(rbind, l)[,2])
+  if(length(grep("\\.\\.", ch))>0) stop("Non numeric element in data: .. (two points)", call. = F)
+  ch <- unique(unlist(strsplit(ch, split = "")))
+  ch <- ch[!(ch %in% c(NA , ".", " ", "  ", "   ", "    ", "      ", "       ", "         ", "         "))]
+  if(FALSE %in% (ch %in% as.character(0:9))) stop(paste("Non numeric element in data: ", paste(ch[!(ch %in% as.character(0:9))], collapse = ", "), " \n", sep = ""), call. = F)
+  
+  mergefunc <- function(lis, kopf, fuzzy){
+    
+    x <- lis[[1]]
+    if(missing(kopf)) x <- x[!is.na(x[,2]),] else x <- x[ x$V1 %in% kopf | !is.na(x[,2]),]
+    names(x)[2] <- names(lis)[1]
+    alarm <- nrow(x)!=length(unique(x[,1]))
+    if(alarm) mess <- (paste("Error in ", names(x)[2], ", duplicted Species name: ", x[duplicated(x[,1]),1]  , "! \n", sep = ""))
+    for(i in 2:length(lis)){
+      if(alarm) stop(mess, call. = F)
+      y <- lis[[i]]
+      if(missing(kopf)) y <- y[!is.na(y[,2]),] else y <- y[ y$V1 %in% kopf | !is.na(y[,2]),]
+      names(y)[2] <- names(lis)[i]
+      alarm <- nrow(y)!=length(unique(y[,1]))
+      if(alarm) mess <- (paste("Error in ", names(y)[2], ", duplicted Species name: ", y[duplicated(y[,1]),1]  , "! \n", sep = ""))
+      if(alarm) {stop(mess, call. = F )}
+      x <- merge(x,y, by="V1", all = TRUE, sort = F)
+    }
+    # order
+    if(!missing(kopf)) x <- x[c(1:length(kopf), order(x$V1[(length(kopf)+1):nrow(x)])+length(kopf) )   ,] else x <- x[order(x$V1),]
+    
+    # use agrep fuccy matching to find typos in the species names
+    if(!missing(kopf) & fuzzy){
+      candis <- character()
+      for(i in (length(kopf)+1):nrow(x)){
+        if(!(x[i,1] %in% candis)){
+          xx <- agrep(pattern = x[i,1], x[-i,1],  value = T)
+          if(length(xx)>0) candis <- c(candis, x[i,1], xx, "/")
+        }
+      }
+      if(length(candis)>0) {
+        mess <- paste("Warning: There might be a Typo in these names:", paste( 
+          # ((c(x[,1],"/")[candis])#, incomparables = "/", fromLast = F)
+          candis, collapse = ", "), " \n")
+        # mess <- gsub(" /, /,", "", mess)
+        warning(mess, call. = F)
+        # cat( mess )
+      }
+    }
+    return(x)
+    
+  }
+    
+  D <- mergefunc(lis = l, kopf = kopf, fuzzy=T)
+  if(missing(outputfilename.xslx)) outputfilename.xslx <- paste( inputfilename.xlsx, "meged.xlsx", sep = "")
+  write.xlsx(D, file = outputfilename.xslx)
+  return(D)
+}
+
+
