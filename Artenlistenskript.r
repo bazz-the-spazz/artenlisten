@@ -6,6 +6,7 @@
 
 
 artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"), fuss="dfhdfahadh", fontsize="\\large", table.length.adjust=0, wald=FALSE, waldextrablatt=T, output="Artenliste.md"){
+  require(openxlsx)
 	if(file.exists(kopf)){  # lade kopf  # This is the stuff that's written between the title and the species list
 		head <- as.character(read.table(kopf, sep="[")[,1])
 	} else {
@@ -13,11 +14,17 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 		head <- ""
 	}
 
-	data <- read.csv(daten)    # .csv file einlesen
-	if(ncol(data) ==1) data <- read.csv2(daten)   # falls nur eine Spalte erkannt wurde mit csv 2 probieren
-
-
-
+  
+  # Daten lesen:
+  data <- 0
+  format <- strsplit(daten, split = "\\.")[[1]][2]
+  if(format == "csv"){
+    data <- read.csv(daten)    # .csv file einlesen
+    if(ncol(data) ==1) data <- read.csv2(daten)   # falls nur eine Spalte erkannt wurde mit csv 2 probieren
+  }
+  if(format == "xlsx") data <- read.xlsx(daten, sheet= 1)    # .csv file einlesen
+  if(!is.data.frame(data)) stop("Keine Daten gefunden. Das script sollte mit .csv oder .xlsx funktionieren.", call. = F)
+	
   x <- character()
 	for (i in 1:ncol(data)){ #loop for each column (=each Plot) of the data
 
@@ -140,9 +147,20 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 
 
 # create eingabeformular
-eingabeformular <- function(daten.csv, explo, kopf, wald=F, filename = "eingabeformular.xlsx"){
+eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformular.xlsx"){
   library(openxlsx)
-  d <- read.csv(daten.csv)
+  
+  
+  # Daten lesen:
+  d <- 0
+  format <- strsplit(daten, split = "\\.")[[1]][2]
+  if(format == "csv"){
+    d <- read.csv(daten)    # .csv file einlesen
+    if(ncol(d) ==1) data <- read.csv2(daten)   # falls nur eine Spalte erkannt wurde mit csv 2 probieren
+  }
+  if(format == "xlsx") d <- read.xlsx(daten, sheet= 1)    # .csv file einlesen
+  if(!is.data.frame(d)) stop("Keine Daten gefunden. Das script sollte mit .csv oder .xlsx funktionieren.", call. = F)
+  
   if(!missing(explo)) d <- d[, which(substr(names(d), 1,1)==explo)]
 
   l <- character()
@@ -187,7 +205,17 @@ eingabeformular <- function(daten.csv, explo, kopf, wald=F, filename = "eingabef
   formating <- which(substr(l[,2], 1,4)=="Plot")
   for(i in 1:length(formating)) addStyle(wb, sheet = 1, cols=1:7, rows=formating[i], style = headStyle)
   setColWidths(wb, sheet = 1, cols = 1:ncol(l), widths =  c("auto", "auto", if(ncol(l)>2) rep(5, ncol(l)-2)) )
-  saveWorkbook(wb, filename, overwrite = TRUE)
+  
+  if(file.exists(filename)) {
+    cat("Achtung!\n")
+    if(readline(paste("Die Datei", filename, "ist bereits vorhanden! Überschreiben? (j/n)"))=="j"){
+      saveWorkbook(wb, filename, overwrite  = TRUE)
+    } else {
+      stop("Abbruch", call. = F)
+    }
+  } else {
+      saveWorkbook(wb, filename, overwrite  = TRUE)
+    }
 }
 
 # create.eingabeformular(daten.csv = "Species_2017-2020_for_Artenbogen.csv", kopf = "Deckungsgrad", wald = T)
@@ -195,7 +223,7 @@ eingabeformular <- function(daten.csv, explo, kopf, wald=F, filename = "eingabef
 
 
 ## read formular and create big table
-eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx", kopf, outputfilename.xslx ){
+eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx", kopf, outputfilename.xslx, fuzzy=T ){
 
   require(openxlsx)
   
@@ -276,10 +304,8 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
     
   }
     
-  D <- mergefunc(lis = l, kopf = kopf, fuzzy=T)
-  if(missing(outputfilename.xslx)) outputfilename.xslx <- paste( inputfilename.xlsx, "meged.xlsx", sep = "")
-  write.xlsx(D, file = outputfilename.xslx)
-  return(D)
+  D <- mergefunc(lis = l, kopf = kopf, fuzzy=fuzzy)
+  if(missing(outputfilename.xslx)) return(D) else write.xlsx(D, file = outputfilename.xslx)
 }
 
 
