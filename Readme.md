@@ -73,15 +73,15 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
 
 1. Rskript einlesen (copy/paste oder Befehl `source("Artenlistenskript.r")`)
 
-2. Nun kann mit der Funktion `eingabeformular()`  die Eingabedatei erstellt werden.
+2. Nun kann mit der Funktion `eingabeformular()`  die Eingabeformular erstellt werden.
 
    - mit dem Argument `daten=` gibt man an wie die Datentabelle heisst. Beispiel: `eingabeformular( daten = "daten.csv")`
 
 3.  Optional stehen noch weitere Argumente zur Verfügung:
 
     - `kopf=`: Welche Kopfdaten müssen zusätzlich zu den Arten eingetippt werden. Beispiel: `kopf = c("Bemerkungen", "Datum", "Totholz", "Moos", "Gestein") `
-    - `explo=`: Nur ein Subset der Plots, beginnend mit einem Bestimmten Buchstaben, soll verwendet werden. Beispiel: `explo="A"`
-    - `wald=`: Handelt es sich um Waldplots? Es werden 4 Spalten für die Ebenen (K, S, B1, B2) generiert.
+    - `explo=`: Nur ein Subset der Plots, beginnend mit einem bestimmten Buchstaben, soll verwendet werden. Beispiel: `explo="A"`
+    - `wald=`: Handelt es sich um Waldplots? Es werden Spalten für die 4 Ebenen (K, S, B1, B2) generiert.
     - `filename=`: Als was soll die Datei gespeichert werden?
 
     **Beispiel:** `eingabeformular(daten = "Frühblüherliste_GAP.csv", explo = "H", kopf = c("Bemerkungen", "Datum", "Totholz", "Moos", "Gestein") , wald = F, filename = "Eingabeformular_Frühblüher_GAP_Hai.xlsx" )`
@@ -94,11 +94,11 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
 
 6.  Optional
 
-    - `kopf=` benennt oder zählt man die Kopfdaten.
+    - `kopf=` benennt oder zählt die Kopfdaten.
     - `outputfilename.xslx=` gibt den Namen der geschriebenen Datei an. Wenn nicht spezifiziert wird die Tabelle direkt in R gelesen.
     - `fuzzy=` schaltet die Tippfehlersuche ein oder aus.
 
-    **Beispiel:** `eingabeformular2tabelle(inputfilename.xlsx = "Eingabeformular_Frühblüher_HF_Hai.xlsx", kopf = 1:8, fuzzy= TRUE)`
+    **Beispiel:** `eingabeformular2tabelle(inputfilename.xlsx = "Eingabeformular_Frühblüher_HF_Hai.xlsx", kopf = 1:5, fuzzy= TRUE)`
 
 7.  Fertig.
 
