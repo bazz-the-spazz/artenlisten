@@ -62,18 +62,18 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 
 	  arten <- paste(arten, "& \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline")
 
-	  if(length(arten) < cutoff) arten <- c(arten, rep("\\phantom{--} & \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline", cutoff-length(arten) ))  # FALLS Artenliste kÃ¼rzer als erster Cuttoff, ergÃ¤nzen mit leeren zeilen
+	  if(length(arten) < cutoff) arten <- c(arten, rep("\\phantom{--} & \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline", cutoff-length(arten) ))  # FALLS Artenliste kürzer als erster Cuttoff, ergänzen mit leeren zeilen
 	  table <- c(header, arten[1:cutoff], end)  # Create first table
 
 	  if(length(arten)> cutoff ){ # Create more tables when first page is full
 
-	    arten <- arten[(cutoff+1):length(arten)] # Artenliste kÃ¼rzen
+	    arten <- arten[(cutoff+1):length(arten)] # Artenliste kürzen
 	    while(length(arten) > cutoff2){ # When Cutoff2 is not enough ad table page
 	      table <- c(table, "\\newpage", header, arten[1:cutoff2], end)
 	      arten <- arten[(cutoff2+1):length(arten)]
 	    }
 
-	    if(length(arten) < cutoff2) arten <- c(arten, rep("\\phantom{--} & \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline", cutoff2-length(arten) ))  # FALLS Artenliste kÃ¼rzer als erster Cuttoff, ergÃ¤nzen mit leeren zeilen
+	    if(length(arten) < cutoff2) arten <- c(arten, rep("\\phantom{--} & \\phantom{--} & \\phantom{--} & \\phantom{--}  & \\\\\\hline", cutoff2-length(arten) ))  # FALLS Artenliste kürzer als erster Cuttoff, ergänzen mit leeren zeilen
 	    table <- c(table, "\\newpage", header, arten, end)
 	  }
 
@@ -94,7 +94,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 			table <- c(header,arten,end,"")  # table consists of header, list and end
 		}
 
-		if(length(arten)>cutoff & length(arten)<(cutoff*2)  & !wald){ #wenn die Arten die zeilenanzahl von cutoff Ã¼berschreiten-> 2 zeilen machen
+		if(length(arten)>cutoff & length(arten)<(cutoff*2)  & !wald){ #wenn die Arten die zeilenanzahl von cutoff überschreiten-> 2 zeilen machen
 			a1 <- arten[1:cutoff]
 			a2 <- arten[(cutoff+1):length(arten)]
 			if(length(a1) !=length(a2) ) a2 <- c(a2, rep("", (length(a1)-length(a2) )))
@@ -102,9 +102,9 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 			table <- c(header,arten,end,"")
 			}
 
-		if(length(arten)>(cutoff*2)  & !wald){   #wenn die Arten die zeilenanzahl von erster seite Ã¼berschreiten-> mehrere Tabellen machen
+		if(length(arten)>(cutoff*2)  & !wald){   #wenn die Arten die zeilenanzahl von erster seite überschreiten-> mehrere Tabellen machen
 			table <- character()
-			art <- paste( "\\phantom{--} &", arten[1:cutoff], "& \\phantom{--} &", arten[(cutoff+1):(cutoff*2)], "\\\\\\hline")  # first fill the table on page 1 with cutoff NÂ°1
+			art <- paste( "\\phantom{--} &", arten[1:cutoff], "& \\phantom{--} &", arten[(cutoff+1):(cutoff*2)], "\\\\\\hline")  # first fill the table on page 1 with cutoff N°1
 			table <-c(table, header,art,end,"")
 
 			for(j in 1:ceiling((length(arten)-(2*cutoff))/(cutoff2*2)) ){
@@ -208,7 +208,7 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
   
   if(file.exists(filename)) {
     cat("Achtung!\n")
-    if(readline(paste("Die Datei", filename, "ist bereits vorhanden! Überschreiben? (j/n)"))=="j"){
+    if(readline(paste("Die Datei", filename, "ist bereits vorhanden! Uberschreiben? (j/n)"))=="j"){
       saveWorkbook(wb, filename, overwrite  = TRUE)
     } else {
       stop("Abbruch", call. = F)
@@ -219,9 +219,9 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
 }
 
 # create.eingabeformular(daten.csv = "Species_2017-2020_for_Artenbogen.csv", kopf = "Deckungsgrad", wald = T)
-
-
-
+# 
+# 
+# 
 ## read formular and create big table
 eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx", kopf, outputfilename.xslx, fuzzy=T ){
 
@@ -246,19 +246,27 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
         ll[[I]] <- data.frame(V1= l[[i]][,1], V2= l[[i]][,j])
         names(ll)[I] <- paste( names(l)[i], ll[[I]][1,2], sep= "_")
         ll[[I]] <- ll[[I]][-1,]
-        # ll[[I]][,2] <- as.numeric(as.character(ll[[I]][,2]))
+        
         I <- I+1
       }
     }
     l <- ll
   }
+  
+  # Sort out kopf!
+  if(!missing(kopf) & !is.numeric(kopf)) if(!(identical(kopf %in% d[,1] , rep(TRUE, length(kopf))))) cat("Angegebene Kopfdaten nicht in Datei! \n")
   if(!missing(kopf) & is.numeric(kopf)) kopf <- l[[1]][kopf,1]
-  if(!missing(kopf)) if(!(identical(kopf %in% d[,1] , rep(TRUE, length(kopf))))) cat("Angegebene Kopfdaten nicht in Datei! \n")
+  # if(!missing(kopf)  & !is.numeric(kopf)) kopf <- 1:length(kopf) 
   
   # Warn if there are non numeric characters in data
-  ch <- as.character(do.call(rbind, l)[,2])
+  # ch <- as.character(do.call(rbind, l)[,2])
+  
+  ch <- character()
+  if(missing(kopf)) kopfi <-  0 else kopfi <- 1:length(kopf)
+  for(i in 1:length(l)) ch  <- c(ch, l[[i]][ (max(kopfi)+1):nrow(l[[i]]) ,2])
+  
   if(length(grep("\\.\\.", ch))>0) stop("Non numeric element in data: .. (two points)", call. = F)
-  ch <- unique(unlist(strsplit(ch, split = "")))
+  ch <- unique(unlist(strsplit(ch[!is.na(ch)], split = "")))
   ch <- ch[!(ch %in% c(NA , ".", " ", "  ", "   ", "    ", "      ", "       ", "         ", "         "))]
   if(FALSE %in% (ch %in% as.character(0:9))) stop(paste("Non numeric element in data: ", paste(ch[!(ch %in% as.character(0:9))], collapse = ", "), " \n", sep = ""), call. = F)
   
