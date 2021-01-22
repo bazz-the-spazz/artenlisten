@@ -2,7 +2,7 @@
 
 [TOC]
 
-## Anleitung zur Herstellung von Artenlisten
+## 1. Herstellung von Aufnahmebögen
 
 Mit diesem Script erstellt man leicht Aufnahmebögen (als PDF) für Vegetationsaufnahmen. 
 
@@ -61,7 +61,7 @@ Mit diesem Script erstellt man leicht Aufnahmebögen (als PDF) für Vegetationsa
     - Schriftgrösse ändern (in R `fontsize="\\normalsize"` oder  `fontsize="\\small"`(standard ist large) )
     - Tabellen kürzen (in R `table.length.adjust= -3` )
 
-## Eintippen und zusammenfügen der Vegetationsdaten (***Neu 2021***)
+## 2. Eintippen und zusammenfügen der Vegetationsdaten (***Neu 2021***)
 
 Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  `eingabeformular()` eine praktische Excel-Datei generiert werden. Diese Datei kann dann mit der Funktion `eingabeformular2tabelle()` zu einer Gesamttabelle zusammengefügt werden.
 
