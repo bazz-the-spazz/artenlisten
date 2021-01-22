@@ -1,4 +1,6 @@
-# Scripte zur Verwaltung von Artenlisten bei Vegetationsaufnahmen 
+# Scripte zur Verwaltung von Artenlisten für Vegetationsaufnahmen 
+
+[TOC]
 
 ## Anleitung zur Herstellung von Artenlisten
 
@@ -101,28 +103,3 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
     **Beispiel:** `eingabeformular2tabelle(inputfilename.xlsx = "Eingabeformular_Alb.xlsx", kopf = 1:5, fuzzy= TRUE)`
 
 7.  Fertig.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
