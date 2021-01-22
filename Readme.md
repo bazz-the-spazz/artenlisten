@@ -84,7 +84,7 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
     - `wald=`: Handelt es sich um Waldplots? Es werden Spalten für die 4 Ebenen (K, S, B1, B2) generiert.
     - `filename=`: Als was soll die Datei gespeichert werden?
 
-    **Beispiel:** `eingabeformular(daten = "Frühblüherliste_GAP.csv", explo = "H", kopf = c("Bemerkungen", "Datum", "Totholz", "Moos", "Gestein") , wald = F, filename = "Eingabeformular_Frühblüher_GAP_Hai.xlsx" )`
+    **Beispiel:** `eingabeformular(daten = "daten.csv", explo = "A", kopf = c("Bemerkungen", "Datum", "Totholz", "Moos", "Gestein") , wald = F, filename = "Eingabeformular_Alb.xlsx" )`
 
 4.  Daten eintippen!!!
 
@@ -98,7 +98,7 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
     - `outputfilename.xslx=` gibt den Namen der geschriebenen Datei an. Wenn nicht spezifiziert wird die Tabelle direkt in R gelesen.
     - `fuzzy=` schaltet die Tippfehlersuche ein oder aus.
 
-    **Beispiel:** `eingabeformular2tabelle(inputfilename.xlsx = "Eingabeformular_Frühblüher_HF_Hai.xlsx", kopf = 1:5, fuzzy= TRUE)`
+    **Beispiel:** `eingabeformular2tabelle(inputfilename.xlsx = "Eingabeformular_Alb.xlsx", kopf = 1:5, fuzzy= TRUE)`
 
 7.  Fertig.
 
