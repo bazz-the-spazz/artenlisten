@@ -79,12 +79,12 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
 
 3.  Optional stehen noch weitere Argumente zur Verfügung:
 
-    - `kopf=`: Welche Kopfdaten müssen zusätzlich zu den Arten eingetippt werden. Beispiel: `kopf = c("Bemerkungen", "Datum", "Totholz", "Moos", "Gestein") `
+    - `kopf=`: Welche Kopfdaten müssen zusätzlich zu den Arten eingetippt werden. Beispiel: `kopf = c("Datum", "Moosschicht", "Gestein", "Aufnahmefläche")`
     - `explo=`: Nur ein Subset der Plots, beginnend mit einem bestimmten Buchstaben, soll verwendet werden. Beispiel: `explo="A"`
     - `wald=`: Handelt es sich um Waldplots? Es werden Spalten für die 4 Ebenen (K, S, B1, B2) generiert.
     - `filename=`: Als was soll die Datei gespeichert werden?
 
-    **Beispiel:** `eingabeformular(daten = "daten.csv", explo = "A", kopf = c("Bemerkungen", "Datum", "Totholz", "Moos", "Gestein") , wald = F, filename = "Eingabeformular_Alb.xlsx" )`
+    **Beispiel:** `eingabeformular(daten = "daten.csv", explo = "A", kopf = c("Vegetations-Höhe1", "Vegetations-Höhe2", "Vegetations-Höhe3", "Vegetations-Höhe4", "Vegetations-Höhe1", "Vegetations-Höhe2", "Vegetations-Höhe3", "Vegetations-Höhe4", "Vegetations-Höhe_Durchschnitt", "S (verholzt) >0-5m", "Streu", "BearbeiterIn", "Krautschicht", "Totholz", "Datum", "Moosschicht", "Gestein", "Aufnahmefläche", "Flechtenschicht", "Offene Erde") , wald = F, filename = "Eingabeformular_Alb.xlsx" )`
 
 4.  Daten eintippen!!!
 
