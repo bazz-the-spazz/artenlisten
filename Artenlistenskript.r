@@ -313,6 +313,17 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
   }
     
   D <- mergefunc(lis = l, kopf = kopf, fuzzy=fuzzy)
+
+  # Transpose data
+  rownames(D) <- gsub(" ", "_", D[,1])
+  names(D) <- gsub("Plot_", "", names(D))
+  D[,1] <-NULL
+  D <- as.data.frame(t(D))
+  for( i in (max(kopfi)+1):ncol(D)){
+    D[, i] <- as.numeric(as.character(D[,i]))
+  }
+  D <- data.frame(Plotcode=row.names(D), D)
+
   if(missing(outputfilename.xslx)) return(D) else write.xlsx(D, file = outputfilename.xslx)
 }
 
