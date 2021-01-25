@@ -147,13 +147,13 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 
 
 # create eingabeformular
-eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformular.xlsx"){
+eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformular.xlsx", dummy=FALSE, overwrite=FALSE){
   library(openxlsx)
   
   
   # Daten lesen:
   d <- 0
-  format <- strsplit(daten, split = "\\.")[[1]][2]
+  format <- strsplit(daten, split = "\\.")[[1]][length(strsplit(daten, split = "\\.")[[1]])]
   if(format == "csv"){
     d <- read.csv(daten)    # .csv file einlesen
     if(ncol(d) ==1) data <- read.csv2(daten)   # falls nur eine Spalte erkannt wurde mit csv 2 probieren
@@ -198,6 +198,20 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
     l <- data.frame(lpl, l)
   }
   names(l) <- NULL
+  # fill with dummy numbers
+  if(dummy & !wald) {
+    l[ !(l[,2] %in% paste("Plot_", plots, sep="")) &  !(l[,2] %in% kopf ) & l[,2]!="",3] <- as.character(.5)
+    l[ (l[,2] %in% kopf ),3] <- "random word"
+    l[l[,3]=="0.5" & !is.na(l[,3]),3] <- as.character(round(runif(length(l[l[,3]=="0.5" & !is.na(l[,3]),3])), 3))
+  }
+  if(dummy & wald) {
+    for( i in 3:6)
+    l[ !(l[,2] %in% paste("Plot_", plots, sep="")) &  !(l[,2] %in% kopf ) & l[,2]!="",i] <- as.character(.5)
+    l[ (l[,2] %in% kopf ),i] <- "random word"
+    l[l[,i]=="0.5" & !is.na(l[,i]),i] <- as.character(round(runif(length(l[l[,i]=="0.5" & !is.na(l[,i]),i])), 3))
+  }
+  
+  
   headStyle <- createStyle(fontColour =  "#a3e8ff", bgFill = "#3a2d0d", textDecoration="bold")
   wb <- createWorkbook()
   addWorksheet(wb, "Sheet 1")
@@ -207,12 +221,15 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
   setColWidths(wb, sheet = 1, cols = 1:ncol(l), widths =  c("auto", "auto", if(ncol(l)>2) rep(5, ncol(l)-2)) )
   
   if(file.exists(filename)) {
-    cat("Achtung!\n")
-    if(readline(paste("Die Datei", filename, "ist bereits vorhanden! Uberschreiben? (j/n)"))=="j"){
-      saveWorkbook(wb, filename, overwrite  = TRUE)
-    } else {
-      stop("Abbruch", call. = F)
-    }
+    if(overwrite==TRUE) {saveWorkbook(wb, filename, overwrite  = TRUE)}
+    if(overwrite==FALSE) {
+      cat("Achtung!\n")
+      if(readline(paste("Die Datei", filename, "ist bereits vorhanden! Uberschreiben? (j/n)"))=="j" | overwrite==TRUE){
+        saveWorkbook(wb, filename, overwrite  = TRUE)
+      } else {
+        stop("Abbruch", call. = F)
+      }
+      }
   } else {
       saveWorkbook(wb, filename, overwrite  = TRUE)
     }
@@ -227,7 +244,9 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
 
   require(openxlsx)
   
-  d <- read.xlsx( inputfilename.xlsx , colNames = F)
+  d <- read.xlsx( inputfilename.xlsx , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL) 
+  if(ncol(d)==2) stop("Empty data file: Abort!", call. = F)
+  head(d)
   d <- d[,2:ncol(d)]
   names(d)[1] <- "V1"
   # find where are the plotnames
@@ -253,10 +272,24 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
     l <- ll
   }
   
+
+  
   # Sort out kopf!
   if(!missing(kopf) & !is.numeric(kopf)) if(!(identical(kopf %in% d[,1] , rep(TRUE, length(kopf))))) cat("Angegebene Kopfdaten nicht in Datei! \n")
   if(!missing(kopf) & is.numeric(kopf)) kopf <- l[[1]][kopf,1]
   # if(!missing(kopf)  & !is.numeric(kopf)) kopf <- 1:length(kopf) 
+  
+  # sort data so that kopf is first
+  for(i in 1:length(l)){
+    if(length(which( !(kopf %in% l[[i]][,1])))>0) {
+      xx <- data.frame(V1= kopf[which( !(kopf %in% l[[i]][,1]))], "")
+      names(xx) <- names(l[[i]])
+      l[[i]] <- rbind(l[[i]][l[[i]][,1] %in% kopf,], xx, l[[i]][ !(l[[i]][,1] %in% kopf) ,])
+    } else {
+      l[[i]] <- rbind(l[[i]][l[[i]][,1] %in% kopf,], l[[i]][ !(l[[i]][,1] %in% kopf) ,])
+    }
+  }
+  
   
   # Warn if there are non numeric characters in data
   # ch <- as.character(do.call(rbind, l)[,2])
@@ -319,7 +352,7 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
   names(D) <- gsub("Plot_", "", names(D))
   D[,1] <-NULL
   D <- as.data.frame(t(D))
-  for( i in (max(kopfi)+1):ncol(D)){
+  for( i in (max(length(kopf))+1):ncol(D)){
     D[, i] <- as.numeric(as.character(D[,i]))
   }
   D <- data.frame(Plotcode=row.names(D), D)
