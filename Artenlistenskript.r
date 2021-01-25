@@ -205,10 +205,11 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
     l[l[,3]=="0.5" & !is.na(l[,3]),3] <- as.character(round(runif(length(l[l[,3]=="0.5" & !is.na(l[,3]),3])), 3))
   }
   if(dummy & wald) {
-    for( i in 3:6)
-    l[ !(l[,2] %in% paste("Plot_", plots, sep="")) &  !(l[,2] %in% kopf ) & l[,2]!="",i] <- as.character(.5)
-    l[ (l[,2] %in% kopf ),i] <- "random word"
-    l[l[,i]=="0.5" & !is.na(l[,i]),i] <- as.character(round(runif(length(l[l[,i]=="0.5" & !is.na(l[,i]),i])), 3))
+    for( i in 3:6){
+      l[ !(l[,2] %in% paste("Plot_", plots, sep="")) & l[,2]!= "Layer" &  !(l[,2] %in% kopf ) & l[,2]!="",i] <- as.character(.5)
+      l[ (l[,2] %in% kopf ),i] <- "random word"
+      l[l[,i]=="0.5" & !is.na(l[,i]),i] <- as.character(round(runif(nrow(l[l[,i]=="0.5" & !is.na(l[,i]),i])), 3))
+    }
   }
   
   
@@ -265,7 +266,6 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
         ll[[I]] <- data.frame(V1= l[[i]][,1], V2= l[[i]][,j])
         names(ll)[I] <- paste( names(l)[i], ll[[I]][1,2], sep= "_")
         ll[[I]] <- ll[[I]][-1,]
-        
         I <- I+1
       }
     }
@@ -275,7 +275,9 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
 
   
   # Sort out kopf!
-  if(!missing(kopf) & !is.numeric(kopf)) if(!(identical(kopf %in% d[,1] , rep(TRUE, length(kopf))))) cat("Angegebene Kopfdaten nicht in Datei! \n")
+  if(!missing(kopf) & !is.numeric(kopf)) if(!(identical(kopf %in% d[,1] , rep(TRUE, length(kopf))))){ 
+    cat(paste("Angegebene Kopfdaten nicht in Datei: ", kopf[!(kopf %in% d[,1])] , ". \n", sep=""))
+  }
   if(!missing(kopf) & is.numeric(kopf)) kopf <- l[[1]][kopf,1]
   # if(!missing(kopf)  & !is.numeric(kopf)) kopf <- 1:length(kopf) 
   
@@ -289,18 +291,22 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
       l[[i]] <- rbind(l[[i]][l[[i]][,1] %in% kopf,], l[[i]][ !(l[[i]][,1] %in% kopf) ,])
     }
   }
-  
+
   
   # Warn if there are non numeric characters in data
   # ch <- as.character(do.call(rbind, l)[,2])
   
   ch <- character()
-  if(missing(kopf)) kopfi <-  0 else kopfi <- 1:length(kopf)
-  for(i in 1:length(l)) ch  <- c(ch, l[[i]][ (max(kopfi)+1):nrow(l[[i]]) ,2])
+  if(missing(kopf)) kopf <- character()
+  for(i in 1:length(l)){ 
+    ch  <- c(ch, l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2])
+    l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2] <- gsub(" ", "", l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2]) # get rid of space (" ") in numeric data
+    l[[i]] <- l[[i]][ !(l[[i]][,1] %in% c("", " ", "   ", "    ", "     ")),]  # get rid of empty lines
+  }
   
   if(length(grep("\\.\\.", ch))>0) stop("Non numeric element in data: .. (two points)", call. = F)
   ch <- unique(unlist(strsplit(ch[!is.na(ch)], split = "")))
-  ch <- ch[!(ch %in% c(NA , ".", " ", "  ", "   ", "    ", "      ", "       ", "         ", "         "))]
+  ch <- ch[!(ch %in% c(NA , "."))]
   if(FALSE %in% (ch %in% as.character(0:9))) stop(paste("Non numeric element in data: ", paste(ch[!(ch %in% as.character(0:9))], collapse = ", "), " \n", sep = ""), call. = F)
   
   mergefunc <- function(lis, kopf, fuzzy){
@@ -352,7 +358,7 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
   names(D) <- gsub("Plot_", "", names(D))
   D[,1] <-NULL
   D <- as.data.frame(t(D))
-  for( i in (max(length(kopf))+1):ncol(D)){
+  for( i in (length(kopf)+1):ncol(D)){
     D[, i] <- as.numeric(as.character(D[,i]))
   }
   D <- data.frame(Plotcode=row.names(D), D)
