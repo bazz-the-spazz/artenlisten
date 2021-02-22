@@ -245,7 +245,16 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
 
   require(openxlsx)
   
-  d <- read.xlsx( inputfilename.xlsx , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL) 
+  
+  
+  d <- read.xlsx( inputfilename.xlsx[1] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL) 
+  if(length(inputfilename.xlsx)>1) { 
+    for(i in 2:length(inputfilename.xlsx)){
+      dd <- read.xlsx( inputfilename.xlsx[i] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL) 
+      if(ncol(d) != ncol(dd)) stop("Empty data files have not the same number of columns. Did you mix Forest plots with Grassland or Spring flowers?", call. = F) 
+      d <- rbind(d,dd)
+    }
+  }
   if(ncol(d)==2) stop("Empty data file: Abort!", call. = F)
   head(d)
   d <- d[,2:ncol(d)]
@@ -365,5 +374,5 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
 
   if(missing(outputfilename.xslx)) return(D) else write.xlsx(D, file = outputfilename.xslx)
 }
-
+# D <- eingabeformular2tabelle(inputfilename.xlsx = c("Eingabeformular_Grünland_HF_Alb.xlsx", "Eingabeformular_Grünland_HF_Hai.xlsx", "Eingabeformular_Grünland_HF_Sch.xlsx"), kopf = 1:14, fuzzy = T)
 
