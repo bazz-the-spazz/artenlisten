@@ -92,7 +92,7 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
 
 5.  Mit der Funktion `eingabeformular2tabelle()` kann das Eingabeformular zu einer Gesamttabelle zusammengefügt werden:
 
-    - mit dem Argument `inputfilename.xlsx =` gibt man den Namen des Eingabeformulars an.
+    - mit dem Argument `inputfilename.xlsx =` gibt man den Namen des Eingabeformulars an. Es können auch mit `c(1.xlsx,2.xlsx,3.xlsx)` mehrere Formulare zusammen gelesen werden (wenn sie die selben Dimensionen haben).
 
 6.  Optional
 
