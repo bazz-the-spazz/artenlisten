@@ -75,7 +75,7 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
 
 1. Rskript einlesen (copy/paste oder Befehl `source("Artenlistenskript.r")`)
 
-2. Nun kann mit der Funktion `eingabeformular()`  die Eingabeformular erstellt werden.
+2. Nun kann mit der Funktion `eingabeformular()`  das Eingabeformular erstellt werden.
 
    - mit dem Argument `daten=` gibt man an wie die Datentabelle heisst. Beispiel: `eingabeformular( daten = "daten.csv")`
 
@@ -88,7 +88,7 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
 
     **Beispiel:** `eingabeformular(daten = "daten.csv", explo = "A", kopf = c("Vegetations-Höhe1", "Vegetations-Höhe2", "Vegetations-Höhe3", "Vegetations-Höhe4", "Vegetations-Höhe1", "Vegetations-Höhe2", "Vegetations-Höhe3", "Vegetations-Höhe4", "Vegetations-Höhe_Durchschnitt", "S (verholzt) >0-5m", "Streu", "BearbeiterIn", "Krautschicht", "Totholz", "Datum", "Moosschicht", "Gestein", "Aufnahmefläche", "Flechtenschicht", "Offene Erde") , wald = F, filename = "Eingabeformular_Alb.xlsx" )`
 
-4. Daten eintippen!!!
+4. Daten in die generierte Excelliste eintippen!!!
 
    
 
