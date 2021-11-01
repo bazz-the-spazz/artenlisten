@@ -240,9 +240,9 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
 # 
 # 
 # 
-## read formular and create big table
-eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx", kopf, outputfilename.xslx, fuzzy=T ){
-
+## read formular and create a big, unified table
+eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx", kopf, outputfilename.xslx, fuzzy=T ){
+  
   require(openxlsx)
   
   
@@ -263,11 +263,14 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
   pn <- which(substr(d[,1], 1, 5) == "Plot_"  )
   pn <- c(pn, nrow(d))
   
+  
+  # create a list, each containing one plot and level (when forest)
   l <- list()
   for(i in 1:(length(pn)-1)) l[[i]] <- d[(pn[i]+1):(pn[i+1]-1),]
   names(l) <- d[pn[1:(length(pn)-1)],1]
   
   if(ncol(d)>2){
+    warning("More than one column of data in datafile. Is it forest data?", call. = F)
     ll <- list()
     I <- 1
     for(i in 1:length(l)){
@@ -281,32 +284,34 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
     l <- ll
   }
   
-
+  
   
   # Sort out kopf!
-  if(!missing(kopf) & !is.numeric(kopf)) if(!(identical(kopf %in% d[,1] , rep(TRUE, length(kopf))))){ 
-    cat(paste("Angegebene Kopfdaten nicht in Datei: ", kopf[!(kopf %in% d[,1])] , ". \n", sep=""))
-  }
-  if(!missing(kopf) & is.numeric(kopf)) kopf <- l[[1]][kopf,1]
-  # if(!missing(kopf)  & !is.numeric(kopf)) kopf <- 1:length(kopf) 
+  if(missing(kopf)){ kopf <- character()} else {
+    if( !is.numeric(kopf)) if(!(identical(kopf %in% d[,1] , rep(TRUE, length(kopf))))){ 
+      cat(paste("Angegebene Kopfdaten nicht in Datei: ", kopf[!(kopf %in% d[,1])] , ". \n", sep=""))
+    }
+    if(is.numeric(kopf)) kopf <- l[[1]][kopf,1]
   
-  # sort data so that kopf is first
-  for(i in 1:length(l)){
-    if(length(which( !(kopf %in% l[[i]][,1])))>0) {
-      xx <- data.frame(V1= kopf[which( !(kopf %in% l[[i]][,1]))], "")
-      names(xx) <- names(l[[i]])
-      l[[i]] <- rbind(l[[i]][l[[i]][,1] %in% kopf,], xx, l[[i]][ !(l[[i]][,1] %in% kopf) ,])
-    } else {
-      l[[i]] <- rbind(l[[i]][l[[i]][,1] %in% kopf,], l[[i]][ !(l[[i]][,1] %in% kopf) ,])
+  
+    # sort data so that kopf is first
+    for(i in 1:length(l)){
+      if(length(which( !(kopf %in% l[[i]][,1])))>0) {
+        xx <- data.frame(V1= kopf[which( !(kopf %in% l[[i]][,1]))], "")
+        names(xx) <- names(l[[i]])
+        l[[i]] <- rbind(l[[i]][l[[i]][,1] %in% kopf,], xx, l[[i]][ !(l[[i]][,1] %in% kopf) ,])
+      } else {
+        l[[i]] <- rbind( l[[i]][l[[i]][,1] %in% kopf,], l[[i]][ !(l[[i]][,1] %in% kopf) ,])
+      }
     }
   }
-
+   
+  
   
   # Warn if there are non numeric characters in data
   # ch <- as.character(do.call(rbind, l)[,2])
   
   ch <- character()
-  if(missing(kopf)) kopf <- character()
   for(i in 1:length(l)){ 
     ch  <- c(ch, l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2])
     l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2] <- gsub(" ", "", l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2]) # get rid of space (" ") in numeric data
@@ -318,10 +323,11 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
   ch <- ch[!(ch %in% c(NA , "."))]
   if(FALSE %in% (ch %in% as.character(0:9))) stop(paste("Non numeric element in data: ", paste(ch[!(ch %in% as.character(0:9))], collapse = ", "), " \n", sep = ""), call. = F)
   
+  # merge the list of plots
   mergefunc <- function(lis, kopf, fuzzy){
     
     x <- lis[[1]]
-    if(missing(kopf)) x <- x[!is.na(x[,2]),] else x <- x[ x$V1 %in% kopf | !is.na(x[,2]),]
+    x <- x[ x$V1 %in% kopf | !is.na(x[,2]),]
     names(x)[2] <- names(lis)[1]
     alarm <- nrow(x)!=length(unique(x[,1]))
     if(alarm) mess <- (paste("Error in ", names(x)[2], ", duplicted Species name: ", x[duplicated(x[,1]),1]  , "! \n", sep = ""))
@@ -336,10 +342,12 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
       x <- merge(x,y, by="V1", all = TRUE, sort = F)
     }
     # order
-    if(!missing(kopf)) x <- x[c(1:length(kopf), order(x$V1[(length(kopf)+1):nrow(x)])+length(kopf) )   ,] else x <- x[order(x$V1),]
+    rownames(x) <- x$V1
+    x <- x[c(kopf, rownames(x[(length(kopf)+1):nrow(x),])[order(rownames(x[(length(kopf)+1):nrow(x),]))]),]
+    rownames(x) <- NULL
     
-    # use agrep fuccy matching to find typos in the species names
-    if(!missing(kopf) & fuzzy){
+    # use agrep fuzzy matching to find typos in the species names
+    if(fuzzy){
       candis <- character()
       for(i in (length(kopf)+1):nrow(x)){
         if(!(x[i,1] %in% candis)){
@@ -359,9 +367,9 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
     return(x)
     
   }
-    
+  
   D <- mergefunc(lis = l, kopf = kopf, fuzzy=fuzzy)
-
+  
   # Transpose data
   rownames(D) <- gsub(" ", "_", D[,1])
   names(D) <- gsub("Plot_", "", names(D))
@@ -371,8 +379,10 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "eingabeformular.xlsx"
     D[, i] <- as.numeric(as.character(D[,i]))
   }
   D <- data.frame(Plotcode=row.names(D), D)
-
+  rownames(D) <- NULL
+  
   if(missing(outputfilename.xslx)) return(D) else write.xlsx(D, file = outputfilename.xslx)
 }
+
 # D <- eingabeformular2tabelle(inputfilename.xlsx = c("Eingabeformular_Grünland_HF_Alb.xlsx", "Eingabeformular_Grünland_HF_Hai.xlsx", "Eingabeformular_Grünland_HF_Sch.xlsx"), kopf = 1:14, fuzzy = T)
 
