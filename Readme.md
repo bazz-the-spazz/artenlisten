@@ -1,7 +1,5 @@
 # Scripte zur Verwaltung von Artenlisten für Vegetationsaufnahmen 
 
-[TOC]
-
 ## 1. Herstellung von Aufnahmebögen
 
 Mit diesem Script erstellt man leicht Aufnahmebögen (als PDF) für Vegetationsaufnahmen. 
@@ -67,11 +65,13 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
 
 ### Benötigt wird
 
-- R (https://cran.r-project.org/bin/windows/base/) mit (`openxlsx`-Paket)
+- R (https://cran.r-project.org/bin/windows/base/) mit (`openxlsx`-Paket; installieren mit `install.packages("openxlsx")`)
 - Tabelle der Arten pro Plot in Spalten. (Dieselbe die auch oben verwendet wurde)
 - das `Artenlistenskript.r` (enthält die Funktionen)
 
 ### Vorgehen
+
+#### Daten digitalisieren
 
 1. Rskript einlesen (copy/paste oder Befehl `source("Artenlistenskript.r")`)
 
@@ -88,18 +88,26 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
 
     **Beispiel:** `eingabeformular(daten = "daten.csv", explo = "A", kopf = c("Vegetations-Höhe1", "Vegetations-Höhe2", "Vegetations-Höhe3", "Vegetations-Höhe4", "Vegetations-Höhe1", "Vegetations-Höhe2", "Vegetations-Höhe3", "Vegetations-Höhe4", "Vegetations-Höhe_Durchschnitt", "S (verholzt) >0-5m", "Streu", "BearbeiterIn", "Krautschicht", "Totholz", "Datum", "Moosschicht", "Gestein", "Aufnahmefläche", "Flechtenschicht", "Offene Erde") , wald = F, filename = "Eingabeformular_Alb.xlsx" )`
 
-4.  Daten eintippen!!!
+4. Daten eintippen!!!
 
-5.  Mit der Funktion `eingabeformular2tabelle()` kann das Eingabeformular zu einer Gesamttabelle zusammengefügt werden:
+   
 
-    - mit dem Argument `inputfilename.xlsx =` gibt man den Namen des Eingabeformulars an. Es können auch mit `c(1.xlsx,2.xlsx,3.xlsx)` mehrere Formulare zusammen gelesen werden (wenn sie die selben Dimensionen haben).
+#### Daten zusammenfügen
 
-6.  Optional
 
-    - `kopf=` benennt oder zählt die Kopfdaten.
-    - `outputfilename.xslx=` gibt den Namen der geschriebenen Datei an. Wenn nicht spezifiziert wird die Tabelle direkt in R gelesen.
-    - `fuzzy=` schaltet die Tippfehlersuche ein oder aus.
 
-    **Beispiel:** `eingabeformular2tabelle(inputfilename.xlsx = "Eingabeformular_Alb.xlsx", kopf = 1:5, fuzzy= TRUE)`
+1. Rskript einlesen (copy/paste oder Befehl `source("Artenlistenskript.r")`)
 
-7.  Fertig.
+2. Mit der Funktion `eingabeformular2tabelle()` kann das Eingabeformular zu einer Gesamttabelle zusammengefügt werden:
+
+   - mit dem Argument `inputfilename.xlsx =` gibt man den Namen des Eingabeformulars an. Es können auch mit `c(1.xlsx,2.xlsx,3.xlsx)` mehrere Formulare zusammen gelesen werden (wenn sie die selben Dimensionen haben)!
+
+3. Optional
+
+   - `kopf=` benennt oder zählt die Kopfdaten.
+   - `outputfilename.xslx=` gibt den Namen der geschriebenen Datei an. Wenn nicht spezifiziert wird die Tabelle direkt in R gelesen.
+   - `fuzzy=` schaltet die Tippfehlersuche ein oder aus.
+
+   **Beispiel:** `eingabeformular2tabelle(inputfilename.xlsx = "Eingabeformular_Alb.xlsx", kopf = 1:5, fuzzy= TRUE)`
+
+4. Fertig.
