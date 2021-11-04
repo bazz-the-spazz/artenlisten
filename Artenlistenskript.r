@@ -147,7 +147,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 
 
 # create eingabeformular
-eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformular.xlsx", dummy=FALSE, overwrite=FALSE, write.fuzzy.mistakes= FALSE){
+eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformular.xlsx", dummy=FALSE, overwrite=FALSE){
   library(openxlsx)
   
   
@@ -239,9 +239,11 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
 # create.eingabeformular(daten.csv = "Species_2017-2020_for_Artenbogen.csv", kopf = "Deckungsgrad", wald = T)
 # 
 # 
+							    
+							    
 # 
 ## read formular and create a big, unified table
-eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx", kopf, outputfilename.xslx, fuzzy=T ){
+eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx", kopf, outputfilename.xslx, fuzzy=T, write.fuzzy.mistakes= FALSE ){
   
   require(openxlsx)
   
