@@ -147,7 +147,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 
 
 # create eingabeformular
-eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformular.xlsx", dummy=FALSE, overwrite=FALSE){
+eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformular.xlsx", dummy=FALSE, overwrite=FALSE, write.fuzzy.mistakes= FALSE){
   library(openxlsx)
   
   
@@ -361,6 +361,7 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
           candis, collapse = ", "), " \n")
         # mess <- gsub(" /, /,", "", mess)
         warning(mess, call. = F)
+        if(write.fuzzy.mistakes) write(mess, "mistakes.txt")
         # cat( mess )
       }
     }
