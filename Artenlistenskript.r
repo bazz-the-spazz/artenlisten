@@ -239,11 +239,9 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
 # create.eingabeformular(daten.csv = "Species_2017-2020_for_Artenbogen.csv", kopf = "Deckungsgrad", wald = T)
 # 
 # 
-							    
-							    
 # 
 ## read formular and create a big, unified table
-eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx", kopf, outputfilename.xslx, fuzzy=T, write.fuzzy.mistakes= FALSE ){
+eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx", kopf, outputfilename.xslx, fuzzy=T, write.fuzzy.mistakes= FALSE, wald=FALSE){
   
   require(openxlsx)
   
@@ -272,7 +270,7 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
   names(l) <- d[pn[1:(length(pn)-1)],1]
   
   if(ncol(d)>2){
-    warning("More than one column of data in datafile. Is it forest data?", call. = F)
+    if(wald==FALSE) warning("More than one column of data in datafile. Is it forest data?", call. = F)
     ll <- list()
     I <- 1
     for(i in 1:length(l)){
@@ -325,6 +323,24 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
   ch <- ch[!(ch %in% c(NA , "."))]
   if(FALSE %in% (ch %in% as.character(0:9))) stop(paste("Non numeric element in data: ", paste(ch[!(ch %in% as.character(0:9))], collapse = ", "), " \n", sep = ""), call. = F)
   
+  # ch <- list()
+  # for(i in 1:length(l))  {  ch[[i]]  <- l[[i]][(length(kopf)+1):nrow(l[[i]]) ,]
+  # ch[[i]]$plot <- names(l)[i]
+  # }
+  # ch <- do.call(rbind, ch)
+  # 
+  # if(length(grep("\\.\\.", ch$V2))>0) stop(paste("Non numeric element in data: .. (two points) in plot:", ch$plot[grep("\\.\\.", ch$V2)]), call. = F)
+  # 
+  # ch$nonnum <- gsub("\\d","",ch$V2)
+  # x <- ch[!is.na(ch$nonnum) & !(ch$nonnum %in% c(".", "")),]
+  # x
+  
+  # Warn if there is somewhere a Cover estimation without a species
+  x <- do.call(rbind,l)
+  x <- rownames(x)[which(is.na(x$V1) & !is.na(x$V2))]
+  if(length(x)>0) stop(paste("Species name missing in Plot: ", paste(x, collapse = ", "), " \n", sep = ""), call. = F)
+  
+  
   # merge the list of plots
   mergefunc <- function(lis, kopf, fuzzy){
     
@@ -354,7 +370,7 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
       for(i in (length(kopf)+1):nrow(x)){
         if(!(x[i,1] %in% candis)){
           xx <- agrep(pattern = x[i,1], x[-i,1],  value = T)
-          if(length(xx)>0) candis <- c(candis, x[i,1], xx, "/")
+          if(length(xx)>0) candis <- c(candis, x[i,1], xx, "\n")
         }
       }
       if(length(candis)>0) {
@@ -388,4 +404,5 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
 }
 
 # D <- eingabeformular2tabelle(inputfilename.xlsx = c("Eingabeformular_Grünland_HF_Alb.xlsx", "Eingabeformular_Grünland_HF_Hai.xlsx", "Eingabeformular_Grünland_HF_Sch.xlsx"), kopf = 1:14, fuzzy = T)
+
 
