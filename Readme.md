@@ -107,6 +107,8 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
    - `kopf=` benennt oder zählt die Kopfdaten.
    - `outputfilename.xslx=` gibt den Namen der geschriebenen Datei an. Wenn nicht spezifiziert wird die Tabelle direkt in R gelesen.
    - `fuzzy=` schaltet die Tippfehlersuche ein oder aus.
+   - `write.fuzzy.mistakes=` sollen die Fehler in seperater txt-Datei gespeichert werden?
+   - `wald=` optional, sind layers zu erwarten?
 
    **Beispiel:** `eingabeformular2tabelle(inputfilename.xlsx = "Eingabeformular_Alb.xlsx", kopf = 1:5, fuzzy= TRUE)`
 
