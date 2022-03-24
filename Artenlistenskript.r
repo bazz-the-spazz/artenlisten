@@ -5,16 +5,15 @@
 # artenliste(data = read.csv("Untitled 1.csv"), kopf = "kopf.md")
 
 
-artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"), fuss="dfhdfahadh", fontsize="\\large", table.length.adjust=0, wald=FALSE, waldextrablatt=T, output="Artenliste.md"){
+artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"), fuss="dfhdfahadh", fontsize="\\large", table.length.adjust=0, wald=FALSE, waldextrablatt=T, output="Artenliste.md", extrazeile, find.in.head, replace.in.head){
   require(openxlsx)
 	if(file.exists(kopf)){  # lade kopf  # This is the stuff that's written between the title and the species list
-		head <- as.character(read.table(kopf, sep="[")[,1])
+		head <- head.back <-  as.character(read.table(kopf, sep="[")[,1])
 	} else {
 		warning("ACHTUNG: Der Kopf konnte nicht gefunden werden! Stimmt der Dateiname?")
 		head <- ""
 	}
 
-  
   # Daten lesen:
   data <- 0
   format <- strsplit(daten, split = "\\.")[[1]][2]
@@ -25,7 +24,30 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
   if(format == "xlsx") data <- read.xlsx(daten, sheet= 1)    # .csv file einlesen
   if(!is.data.frame(data)) stop("Keine Daten gefunden. Das script sollte mit .csv oder .xlsx funktionieren.", call. = F)
 	
+  # EXtrazeile: insert a extrainformation between header and table. Either one thing everywhere or one for each Plot.
+  extra <- FALSE
+  if(!missing(extrazeile)) {
+    table.length.adjust <- table.length.adjust -1
+    extra <- TRUE
+    if(length(extrazeile)!=1 & length(extrazeile)!=ncol(data)){
+      warning(paste("Achtung: Nicht genügend Extrazeilen für jeden Plot (", length(extrazeile), " statt ", ncol(data),"). Das erste Element wird wiederholt.", sep = ""))
+      extrazeile <- rep(extrazeile[1], ncol(data))
+    }
+  }
+  
+  # Find.in.head & replace.in.head:
+  ## Find a string of characters in the head and replace it with another
+  replace <- FALSE
+  if(!missing(find.in.head)){
+  	if(missing(replace.in.head)) {warning("Argument replace.in.head is missing"); break }
+  	if(length(find.in.head)>1 ) if(is.list(replace.in.head)==FALSE) {warning(paste("Argument replace.in.head is not a list of length:", length(find.in.head))); break }
+  	replace <- TRUE
+		if(is.list(replace.in.head)==FALSE)	replace.in.head <- list(replace.in.head) # make list if it isn't already
+  	}
+  
+  
   x <- character()
+  ## Loop
 	for (i in 1:ncol(data)){ #loop for each column (=each Plot) of the data
 
 		size <- fontsize      # this is the latex command for the font size (eg. \\tiny, \\huge)
@@ -129,7 +151,28 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 			}
 		}
 	##
-	x = c(x, c("\\setcounter{page}{1}", title, "", head, "", size, table, "\\newpage"))
+	
+	# find and replace in head
+	if(replace){
+	head <- head.back
+		for(j in 1:length(find.in.head)){ # loop for each term to be replaced
+			f <- find.in.head[j]
+			r <- replace.in.head[[j]]
+	    if(length(r)!=1 & length(r)!=ncol(data)){
+  	    warning(paste("Achtung: Nicht genügend Replacements für jeden Plot (", length(r), " statt ", ncol(data),"). Das erste Element wird wiederholt.", sep = ""))
+  	    r <- rep(r[1], ncol(data))
+	    }
+			# cat(r[i])
+			head <- gsub(f, r[i], head)
+		}
+	}
+		
+	
+	if(extra){ #insert extrabit
+	     x = c(x, c("\\setcounter{page}{1}", title, "", head, extrazeile[i], "" ,size, table, "\\newpage", ""))
+	} else {
+	  x = c(x, c("\\setcounter{page}{1}", title, "", head, "", size, table, "\\newpage", ""))
+	}
 		# write(x = c("\\setcounter{page}{1}", title, "", head, "", size, table, "\\newpage"), file = paste("./md/",names(data)[i], ".md", sep=""), ncolumns = 1)  # write the md file
 
 	}
@@ -406,3 +449,126 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
 # D <- eingabeformular2tabelle(inputfilename.xlsx = c("Eingabeformular_Grünland_HF_Alb.xlsx", "Eingabeformular_Grünland_HF_Hai.xlsx", "Eingabeformular_Grünland_HF_Sch.xlsx"), kopf = 1:14, fuzzy = T)
 
 
+
+
+
+# Function to append new date from the new year to the entire data from the previous years
+
+merge.old.new <- function(old, new, first.species.old){
+  
+  
+  # is head complete
+  stop<- FALSE
+  if(length(unique(names(old)[1:(first.species.old-1)] %in% names(new))) != 1) {
+    warning(paste("Missing variable in new data frame:", 
+                  names(old)[
+                    c((!names(old) %in% names(new))[1:(first.species.old-1)]
+                      , rep(FALSE, ncol(old)-first.species.old+1))
+                  ] 
+    ), call. = F )
+    stop <- TRUE
+  }
+  
+  if(stop==FALSE){
+    # add.missing.cols
+    add.missing.cols <- function(from, to) {
+      ta <- names(from)[! names(from) %in% names(to) ]
+      to[,(ncol(to)+1):(ncol(to)+length(ta))] <- NA
+      
+      names(to)[(ncol(to)+1-length(ta)):ncol(to)] <- ta
+      return(to)
+    }
+    
+    old <- add.missing.cols(new, old)
+    new <- add.missing.cols(old, new)
+    
+    # order
+    old <- old[, c(names(old)[1:(first.species.old-1)], sort(names(old)[first.species.old:ncol(old)]) )]
+    new <- new[, names(old)]
+    
+    # rbind
+    x <- rbind(old, new)
+    
+    return(x) 
+  }
+}
+
+
+# # test
+# o <- n <- as.data.frame(matrix(rnorm(25,25,1), ncol = 5))
+# names(o)[4:5] <- 1:2
+# names(n)[4:5] <- 3:4
+# # names(n)[1] <- "t"
+# merge.old.new(old = o, new = n, first.species.old = 3)
+
+
+
+
+# Function to sum two or more species to a new column. 
+aggregate.species <- function(data, from, to, order.from.which.column, method="sum"){
+  # check if nothing essential is missing
+  if(missing(data) | missing(from) | missing(to)) {warning("something essential is missing", call. = F) ;break}
+  # Kick out those that are not in the data set
+  from <- from[which(from %in% names(data))]
+  # if only one from: rename column, else start the process
+  if(length(from) == 1){
+    names(data)[which(names(data)==from)] <- to
+  } else {
+    # Create column
+    data[,ncol(data)+1] <- NA
+    # aggregate species 
+    if(method=="sum") data[,ncol(data)] <- rowSums(data[,from], na.rm = TRUE)
+    if(method=="higher") data[,ncol(data)] <- apply(data[,from], MARGIN = 1, FUN = function(x){x[is.na(x)] <- 0; max(x ,na.rm = TRUE)})
+    # delete all redundant species 
+    data[,from] <- NULL
+    # rename new column
+    names(data)[ncol(data)] <- to
+    # # Zero become NA
+    # data[data[,ncol(data)]==0, ncol(data)] <- NA
+  }
+  # order columns alphabethically 
+  if(!missing(order.from.which.column)){
+    if(is.character(order.from.which.column)) order.from.which.column <- which(names(data)==order.from.which.column)
+    if(order.from.which.column==1) data <- data[, sort(names(data))] else {
+      data <- data[, c( names(data)[1:(order.from.which.column-1)], sort(names(data)[order.from.which.column:ncol(data)]))]
+    }
+  }
+  return(data)
+}
+
+
+
+# function to turn 0 into NA or vice-versa
+zeros2na <- function(data, umbekehrt=TRUE, first.species){ # Function to replace all 0 to NA
+  if(missing(first.species)) first.species <- 1
+  
+
+  if(umbekehrt){
+    for(i in first.species:ncol(data)){
+      if(is.numeric(data[,i]) | (length(unique(data[,i])) == 1 & is.na(unique(data[,i])[1]) )){ 
+        data[is.na(data[,i]),i] <- 0
+      }
+    }
+  } else {
+    for(i in first.species:ncol(data)){
+      if(is.numeric(data[,i])){ 
+        data[data[,i]==0 & !is.na(data[,i]),i] <- NA    
+      }
+    }
+  }
+  return(data)
+}
+
+
+
+# wurde der plot erhoben? Function to convert plots without any record (in a year) to NA
+plot.surveyed <- function(data, first.species, index){
+  if(missing(index)) py <- paste(data$Useful_EPPlotID, data$Year) else py <- index
+  
+  for( i in unique(py)){
+    if( sum(data[py==i, first.species:ncol(data)], na.rm = T)==0){
+      data[py==i, first.species:ncol(data)] <- NA
+    }
+  }  
+  return(data)
+}
