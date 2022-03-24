@@ -38,7 +38,10 @@ Mit diesem Script erstellt man leicht Aufnahmebögen (als PDF) für Vegetationsa
     - `titel=`: Was soll nebst dem Plotnamen noch im Titel stehen. Standardmässig besteht die Titelzeile aus dem Plotname und dem aktuellen Monat und Jahr!
     - `kopf=`: Was ist der Name der Datei die den Kopf enthält. Standard ist "kopf.md".
     - `fuss=`: Was soll nebst dem Plotnamen noch in der Fusszeile stehen. Standard ist der Titel.
-    - ***Neu für 2021***`wald=`: Handelt es sich um Waldplots? und `waldextrablatt=`: soll ein leeres Blatt angefügt werden wenn nicht mehr viel Platz (~8 Zeilen) übrig sind.
+    - `wald=`: Handelt es sich um Waldplots? und `waldextrablatt=`: soll ein leeres Blatt angefügt werden wenn nicht mehr viel Platz (~8 Zeilen) übrig sind.
+    - ***NEU für 2022***:
+      -  `extrazeile=`: Eine zusätzliche Information kann zwischen Kopf und Tabelle eingefügt werden.
+      - `find.in.head=` & `replace.in.head=`: Eine Textzeile im Titel kann angepasst werden
 
     **Beispiel:** `artenliste(daten = "daten.csv", kopf = "kopf.md", titel = "Vegetationsaufnahme SADE Grünland Alb (2018)", fuss="SADE 2018", wald=FALSE)`
 
@@ -59,7 +62,7 @@ Mit diesem Script erstellt man leicht Aufnahmebögen (als PDF) für Vegetationsa
     - Schriftgrösse ändern (in R `fontsize="\\normalsize"` oder  `fontsize="\\small"`(standard ist large) )
     - Tabellen kürzen (in R `table.length.adjust= -3` )
 
-## 2. Eintippen und zusammenfügen der Vegetationsdaten (***Neu 2021***)
+## 2. Eintippen und zusammenfügen der Vegetationsdaten
 
 Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  `eingabeformular()` eine praktische Excel-Datei generiert werden. Diese Datei kann dann mit der Funktion `eingabeformular2tabelle()` zu einer Gesamttabelle zusammengefügt werden.
 
@@ -113,3 +116,62 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
    **Beispiel:** `eingabeformular2tabelle(inputfilename.xlsx = "Eingabeformular_Alb.xlsx", kopf = 1:5, fuzzy= TRUE)`
 
 4. Fertig.
+
+
+
+## 3. Zusammenführen mit früheren Aufnahmen: ***Neu 2022***
+
+Die neue Tabelle kann mit den bisherigen Aufnahmen zusammengefügt werden. 
+
+### Benötigt wird
+
+- Tabelle der bisherigen Aufnahmen (je eine Zeile für jeden Plot, Spalten für Metadaten und Arten (erst Meta, dann Arten!))
+- das `Artenlistenskript.r` (enthält die Funktionen)
+
+### Vorgehen
+
+#### Zusammenfügen
+
+1. Rskript einlesen (copy/paste oder Befehl `source("Artenlistenskript.r")`)
+2. Mit der Funktion `merge.old.new())` werden die alten und neuen Daten zusammengefügt.
+   - Die Daten müssen schon als data.frame in R geladen sein.
+   - Argumente:
+     - `old=`: Name des Dataframe der vorderen Jahre
+     - `new=`: Name des Dataframe des neuen Jahres
+     - `first.species.old=`: Nummer der Spalte, die die erste Art enthält (nach den Metadaten)
+
+#### Arten zusammenlegen
+
+Es kann vorkommen, dass eine Art unter mehreren Namen aufgenommen wurde mit der Funktion `aggregate.species`können diese zusammengelegt werden:
+
+- Argumente:
+  - `data=`: Name des Dataframe
+  - `from=`: Namen der Arten die zusammengelegt werden sollen. z.B.  c("Trifolium_campestre", "Trifolium_dubium")
+  - `to=` : Name der neuen Art: E.g. "Trifolium campestre/dubium"
+  - `method=`: wie sollen die Arten kombiniert werden
+    - `"sum"`: die Werte werden addiert
+    - `"higher"`: der höchste Wert wird gebraucht
+  - `order.from.which.column`: Nummer der Spalte von der aus Alphabethisch sortiert werden soll. Normalerweise von der ersten Art.
+
+#### NA oder 0
+
+Mit der funktion `zero2na()` werden Nullen zu NA (oder umgekehrt) geändert.
+
+- Argumente:
+  - `data=`: Name des Dataframe
+  - `first.species`: Nummer der Spalte mit der ersten Art
+  - `umbekehrt=`: 
+    - Wenn FALSE: Nullen werden zu NA
+    - Wenn TRUE: NAs werden zu Nullen
+
+#### Wurde der Plot besucht?
+
+Es kann sein, dass in einem bestimmten Jahr ein Plot gar nicht besucht wurde und keine Daten aufgenommen sind, der Plot dennoch in den Daten geführt wird. Dafür sollten alle Arten auf NA (nicht auf 0) gesetzt werden. Mit der Funktion `plot.surveyed()` wird erst geschaut, ob es in einem Plot aufnahmen gibt. Falls solche fehlen, werden alle Arten auf NA gesetzt.
+
+- Argumente:
+  - `data=`: Name des Dataframe
+  - `first.species`: Nummer der Spalte mit der ersten Art
+  - `index=`: Ein eindeutiger Index für alle Plot X Jahr Kombinationen. Standard ist `index <- paste(data$Useful_EPPlotID, data$Year)`
+
+
+
