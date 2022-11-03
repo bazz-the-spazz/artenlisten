@@ -283,6 +283,10 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
 # 
 # 
 # 
+							    
+							    
+							    
+							    
 ## read formular and create a big, unified table
 eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx", kopf, outputfilename.xslx, fuzzy=T, write.fuzzy.mistakes= FALSE, wald=FALSE){
   
@@ -448,6 +452,31 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
 
 # D <- eingabeformular2tabelle(inputfilename.xlsx = c("Eingabeformular_Grünland_HF_Alb.xlsx", "Eingabeformular_Grünland_HF_Hai.xlsx", "Eingabeformular_Grünland_HF_Sch.xlsx"), kopf = 1:14, fuzzy = T)
 
+
+# Functions to correct species when using eingabeformular2tabelle
+## Merge duplicated species in plots
+corrections.merge.duplicates <- function(data, plot, species, method="higher"){
+	x <- data[data[,1]==plot & data[,2]==species & !is.na(data[,2]) ,] # get the offending species from the plot
+	rn <- row.names(x) # get the rownames
+	if(method=="higher") data[rn[1],3] <- as.character(max(as.numeric(x$X3), na.rm = T))  #sum up the two entries and write it down for the first entry
+	if(method=="sum") data[rn[1],3] <- as.character(sum(as.numeric(x$X3), na.rm = T))  #sum up the two entries and write it down for the first entry
+	if(method=="mean") data[rn[1],3] <- as.character(mean(as.numeric(x$X3), na.rm = T))  # alternativels take the mean
+	data <- data[!(rownames(data) %in% rn[-1]),]  # remove all but the first entry from the data
+	return(data)
+}
+
+## Change species names
+corrections.change.name <- function(from, to, data){
+	if(is.list(data)){
+		for(i in 1:length(data))
+			data[[i]][,2] <- gsub(pattern = from, replacement = to, data[[i]][,2])
+	} else {
+	data[,2] <- gsub(pattern = from, replacement = to, data[,2])
+	}
+	return(data)
+}
+							    
+							    
 
 
 
