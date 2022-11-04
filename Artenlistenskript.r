@@ -23,7 +23,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
   }
   if(format == "xlsx") data <- read.xlsx(daten, sheet= 1)    # .csv file einlesen
   if(!is.data.frame(data)) stop("Keine Daten gefunden. Das script sollte mit .csv oder .xlsx funktionieren.", call. = F)
-	
+
   # EXtrazeile: insert a extrainformation between header and table. Either one thing everywhere or one for each Plot.
   extra <- FALSE
   if(!missing(extrazeile)) {
@@ -34,7 +34,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
       extrazeile <- rep(extrazeile[1], ncol(data))
     }
   }
-  
+
   # Find.in.head & replace.in.head:
   ## Find a string of characters in the head and replace it with another
   replace <- FALSE
@@ -44,8 +44,8 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
   	replace <- TRUE
 		if(is.list(replace.in.head)==FALSE)	replace.in.head <- list(replace.in.head) # make list if it isn't already
   	}
-  
-  
+
+
   x <- character()
   ## Loop
 	for (i in 1:ncol(data)){ #loop for each column (=each Plot) of the data
@@ -151,7 +151,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 			}
 		}
 	##
-	
+
 	# find and replace in head
 	if(replace){
 	head <- head.back
@@ -166,8 +166,8 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 			head <- gsub(f, r[i], head)
 		}
 	}
-		
-	
+
+
 	if(extra){ #insert extrabit
 	     x = c(x, c("\\setcounter{page}{1}", title, "", head, extrazeile[i], "" ,size, table, "\\newpage", ""))
 	} else {
@@ -192,8 +192,8 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 # create eingabeformular
 eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformular.xlsx", dummy=FALSE, overwrite=FALSE){
   library(openxlsx)
-  
-  
+
+
   # Daten lesen:
   d <- 0
   format <- strsplit(daten, split = "\\.")[[1]][length(strsplit(daten, split = "\\.")[[1]])]
@@ -203,7 +203,7 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
   }
   if(format == "xlsx") d <- read.xlsx(daten, sheet= 1)    # .csv file einlesen
   if(!is.data.frame(d)) stop("Keine Daten gefunden. Das script sollte mit .csv oder .xlsx funktionieren.", call. = F)
-  
+
   if(!missing(explo)) d <- d[, which(substr(names(d), 1,1)==explo)]
 
   l <- character()
@@ -216,7 +216,7 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
       rep("", 5)
     )
   }
-  
+
   plots <- do.call(rbind, strsplit(l[substr(l, 1,5)=="Plot_"], split = "Plot_"))[,2]
   I <- 1
   i <- 1
@@ -229,14 +229,14 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
       I <- I+1
       if(I > length(l)) break
     }
-    
+
   }
   if(wald){
     l <- data.frame(lpl, l, k=character(length(l)), s=character(length(l)), b1=character(length(l)), b2=character(length(l)))
-    l$s[which(l$l=="Layer")] <- "S"  
-    l$k[which(l$l=="Layer")] <- "K"  
-    l$b1[which(l$l=="Layer")] <- "B1"  
-    l$b2[which(l$l=="Layer")] <- "B2"  
+    l$s[which(l$l=="Layer")] <- "S"
+    l$k[which(l$l=="Layer")] <- "K"
+    l$b1[which(l$l=="Layer")] <- "B1"
+    l$b2[which(l$l=="Layer")] <- "B2"
   } else {
     l <- data.frame(lpl, l)
   }
@@ -254,8 +254,8 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
       l[l[,i]=="0.5" & !is.na(l[,i]),i] <- as.character(round(runif(nrow(l[l[,i]=="0.5" & !is.na(l[,i]),i])), 3))
     }
   }
-  
-  
+
+
   headStyle <- createStyle(fontColour =  "#a3e8ff", bgFill = "#3a2d0d", textDecoration="bold")
   wb <- createWorkbook()
   addWorksheet(wb, "Sheet 1")
@@ -263,7 +263,7 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
   formating <- which(substr(l[,2], 1,4)=="Plot")
   for(i in 1:length(formating)) addStyle(wb, sheet = 1, cols=1:7, rows=formating[i], style = headStyle)
   setColWidths(wb, sheet = 1, cols = 1:ncol(l), widths =  c("auto", "auto", if(ncol(l)>2) rep(5, ncol(l)-2)) )
-  
+
   if(file.exists(filename)) {
     if(overwrite==TRUE) {saveWorkbook(wb, filename, overwrite  = TRUE)}
     if(overwrite==FALSE) {
@@ -280,25 +280,25 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
 }
 
 # create.eingabeformular(daten.csv = "Species_2017-2020_for_Artenbogen.csv", kopf = "Deckungsgrad", wald = T)
-# 
-# 
-# 
-							    
-							    
-							    
-							    
+#
+#
+#
+
+
+
+
 ## read formular and create a big, unified table
 eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx", kopf, outputfilename.xslx, fuzzy=T, write.fuzzy.mistakes= FALSE, wald=FALSE){
-  
+
   require(openxlsx)
-  
-  
-  
-  d <- read.xlsx( inputfilename.xlsx[1] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL) 
-  if(length(inputfilename.xlsx)>1) { 
+
+
+
+  d <- read.xlsx( inputfilename.xlsx[1] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL)
+  if(length(inputfilename.xlsx)>1) {
     for(i in 2:length(inputfilename.xlsx)){
-      dd <- read.xlsx( inputfilename.xlsx[i] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL) 
-      if(ncol(d) != ncol(dd)) stop("Empty data files have not the same number of columns. Did you mix Forest plots with Grassland or Spring flowers?", call. = F) 
+      dd <- read.xlsx( inputfilename.xlsx[i] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL)
+      if(ncol(d) != ncol(dd)) stop("Empty data files have not the same number of columns. Did you mix Forest plots with Grassland or Spring flowers?", call. = F)
       d <- rbind(d,dd)
     }
   }
@@ -309,13 +309,13 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
   # find where are the plotnames
   pn <- which(substr(d[,1], 1, 5) == "Plot_"  )
   pn <- c(pn, nrow(d))
-  
-  
+
+
   # create a list, each containing one plot and level (when forest)
   l <- list()
   for(i in 1:(length(pn)-1)) l[[i]] <- d[(pn[i]+1):(pn[i+1]-1),]
   names(l) <- d[pn[1:(length(pn)-1)],1]
-  
+
   if(ncol(d)>2){
     if(wald==FALSE) warning("More than one column of data in datafile. Is it forest data?", call. = F)
     ll <- list()
@@ -330,17 +330,17 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
     }
     l <- ll
   }
-  
-  
-  
+
+
+
   # Sort out kopf!
   if(missing(kopf)){ kopf <- character()} else {
-    if( !is.numeric(kopf)) if(!(identical(kopf %in% d[,1] , rep(TRUE, length(kopf))))){ 
+    if( !is.numeric(kopf)) if(!(identical(kopf %in% d[,1] , rep(TRUE, length(kopf))))){
       cat(paste("Angegebene Kopfdaten nicht in Datei: ", kopf[!(kopf %in% d[,1])] , ". \n", sep=""))
     }
     if(is.numeric(kopf)) kopf <- l[[1]][kopf,1]
-  
-  
+
+
     # sort data so that kopf is first
     for(i in 1:length(l)){
       if(length(which( !(kopf %in% l[[i]][,1])))>0) {
@@ -352,45 +352,45 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
       }
     }
   }
-   
-  
-  
+
+
+
   # Warn if there are non numeric characters in data
   # ch <- as.character(do.call(rbind, l)[,2])
-  
+
   ch <- character()
-  for(i in 1:length(l)){ 
+  for(i in 1:length(l)){
     ch  <- c(ch, l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2])
     l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2] <- gsub(" ", "", l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2]) # get rid of space (" ") in numeric data
     l[[i]] <- l[[i]][ !(l[[i]][,1] %in% c("", " ", "   ", "    ", "     ")),]  # get rid of empty lines
   }
-  
+
   if(length(grep("\\.\\.", ch))>0) stop("Non numeric element in data: .. (two points)", call. = F)
   ch <- unique(unlist(strsplit(ch[!is.na(ch)], split = "")))
   ch <- ch[!(ch %in% c(NA , "."))]
   if(FALSE %in% (ch %in% as.character(0:9))) stop(paste("Non numeric element in data: ", paste(ch[!(ch %in% as.character(0:9))], collapse = ", "), " \n", sep = ""), call. = F)
-  
+
   # ch <- list()
   # for(i in 1:length(l))  {  ch[[i]]  <- l[[i]][(length(kopf)+1):nrow(l[[i]]) ,]
   # ch[[i]]$plot <- names(l)[i]
   # }
   # ch <- do.call(rbind, ch)
-  # 
+  #
   # if(length(grep("\\.\\.", ch$V2))>0) stop(paste("Non numeric element in data: .. (two points) in plot:", ch$plot[grep("\\.\\.", ch$V2)]), call. = F)
-  # 
+  #
   # ch$nonnum <- gsub("\\d","",ch$V2)
   # x <- ch[!is.na(ch$nonnum) & !(ch$nonnum %in% c(".", "")),]
   # x
-  
+
   # Warn if there is somewhere a Cover estimation without a species
   x <- do.call(rbind,l)
   x <- rownames(x)[which(is.na(x$V1) & !is.na(x$V2))]
   if(length(x)>0) stop(paste("Species name missing in Plot: ", paste(x, collapse = ", "), " \n", sep = ""), call. = F)
-  
-  
+
+
   # merge the list of plots
   mergefunc <- function(lis, kopf, fuzzy){
-    
+
     x <- lis[[1]]
     x <- x[ x$V1 %in% kopf | !is.na(x[,2]),]
     names(x)[2] <- names(lis)[1]
@@ -410,7 +410,7 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
     rownames(x) <- x$V1
     x <- x[c(kopf, rownames(x[(length(kopf)+1):nrow(x),])[order(rownames(x[(length(kopf)+1):nrow(x),]))]),]
     rownames(x) <- NULL
-    
+
     # use agrep fuzzy matching to find typos in the species names
     if(fuzzy){
       candis <- character()
@@ -421,7 +421,7 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
         }
       }
       if(length(candis)>0) {
-        mess <- paste("Warning: There might be a Typo in these names:", paste( 
+        mess <- paste("Warning: There might be a Typo in these names:", paste(
           # ((c(x[,1],"/")[candis])#, incomparables = "/", fromLast = F)
           candis, collapse = ", "), " \n")
         # mess <- gsub(" /, /,", "", mess)
@@ -431,11 +431,11 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
       }
     }
     return(x)
-    
+
   }
-  
+
   D <- mergefunc(lis = l, kopf = kopf, fuzzy=fuzzy)
-  
+
   # Transpose data
   rownames(D) <- gsub(" ", "_", D[,1])
   names(D) <- gsub("Plot_", "", names(D))
@@ -444,9 +444,10 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
   for( i in (length(kopf)+1):ncol(D)){
     D[, i] <- as.numeric(as.character(D[,i]))
   }
-  D <- data.frame(Plotcode=row.names(D), D)
+  D$Plotcode <- rownames(D)
+  D <- D[,c("Plotcode", names(D)[-which(names(D)=="Plotcode")])]
   rownames(D) <- NULL
-  
+
   if(missing(outputfilename.xslx)) return(D) else write.xlsx(D, file = outputfilename.xslx)
 }
 
@@ -475,8 +476,8 @@ corrections.change.name <- function(from, to, data){
 	}
 	return(data)
 }
-							    
-							    
+
+
 
 
 
@@ -484,41 +485,41 @@ corrections.change.name <- function(from, to, data){
 # Function to append new date from the new year to the entire data from the previous years
 
 merge.old.new <- function(old, new, first.species.old){
-  
-  
+
+
   # is head complete
   stop<- FALSE
   if(length(unique(names(old)[1:(first.species.old-1)] %in% names(new))) != 1) {
-    warning(paste("Missing variable in new data frame:", 
+    warning(paste("Missing variable in new data frame:",
                   names(old)[
                     c((!names(old) %in% names(new))[1:(first.species.old-1)]
                       , rep(FALSE, ncol(old)-first.species.old+1))
-                  ] 
+                  ]
     ), call. = F )
     stop <- TRUE
   }
-  
+
   if(stop==FALSE){
     # add.missing.cols
     add.missing.cols <- function(from, to) {
       ta <- names(from)[! names(from) %in% names(to) ]
       to[,(ncol(to)+1):(ncol(to)+length(ta))] <- NA
-      
+
       names(to)[(ncol(to)+1-length(ta)):ncol(to)] <- ta
       return(to)
     }
-    
+
     old <- add.missing.cols(new, old)
     new <- add.missing.cols(old, new)
-    
+
     # order
     old <- old[, c(names(old)[1:(first.species.old-1)], sort(names(old)[first.species.old:ncol(old)]) )]
     new <- new[, names(old)]
-    
+
     # rbind
     x <- rbind(old, new)
-    
-    return(x) 
+
+    return(x)
   }
 }
 
@@ -533,7 +534,7 @@ merge.old.new <- function(old, new, first.species.old){
 
 
 
-# Function to sum two or more species to a new column. 
+# Function to sum two or more species to a new column.
 aggregate.species <- function(data, from, to, order.from.which.column, method="sum"){
   # check if nothing essential is missing
   if(missing(data) | missing(from) | missing(to)) {warning("something essential is missing", call. = F) ;break}
@@ -545,17 +546,17 @@ aggregate.species <- function(data, from, to, order.from.which.column, method="s
   } else {
     # Create column
     data[,ncol(data)+1] <- NA
-    # aggregate species 
+    # aggregate species
     if(method=="sum") data[,ncol(data)] <- rowSums(data[,from], na.rm = TRUE)
     if(method=="higher") data[,ncol(data)] <- apply(data[,from], MARGIN = 1, FUN = function(x){x[is.na(x)] <- 0; max(x ,na.rm = TRUE)})
-    # delete all redundant species 
+    # delete all redundant species
     data[,from] <- NULL
     # rename new column
     names(data)[ncol(data)] <- to
     # # Zero become NA
     # data[data[,ncol(data)]==0, ncol(data)] <- NA
   }
-  # order columns alphabethically 
+  # order columns alphabethically
   if(!missing(order.from.which.column)){
     if(is.character(order.from.which.column)) order.from.which.column <- which(names(data)==order.from.which.column)
     if(order.from.which.column==1) data <- data[, sort(names(data))] else {
@@ -570,18 +571,18 @@ aggregate.species <- function(data, from, to, order.from.which.column, method="s
 # function to turn 0 into NA or vice-versa
 zeros2na <- function(data, umbekehrt=TRUE, first.species){ # Function to replace all 0 to NA
   if(missing(first.species)) first.species <- 1
-  
+
 
   if(umbekehrt){
     for(i in first.species:ncol(data)){
-      if(is.numeric(data[,i]) | (length(unique(data[,i])) == 1 & is.na(unique(data[,i])[1]) )){ 
+      if(is.numeric(data[,i]) | (length(unique(data[,i])) == 1 & is.na(unique(data[,i])[1]) )){
         data[is.na(data[,i]),i] <- 0
       }
     }
   } else {
     for(i in first.species:ncol(data)){
-      if(is.numeric(data[,i])){ 
-        data[data[,i]==0 & !is.na(data[,i]),i] <- NA    
+      if(is.numeric(data[,i])){
+        data[data[,i]==0 & !is.na(data[,i]),i] <- NA
       }
     }
   }
@@ -593,11 +594,11 @@ zeros2na <- function(data, umbekehrt=TRUE, first.species){ # Function to replace
 # wurde der plot erhoben? Function to convert plots without any record (in a year) to NA
 plot.surveyed <- function(data, first.species, index){
   if(missing(index)) py <- paste(data$Useful_EPPlotID, data$Year) else py <- index
-  
+
   for( i in unique(py)){
     if( sum(data[py==i, first.species:ncol(data)], na.rm = T)==0){
       data[py==i, first.species:ncol(data)] <- NA
     }
-  }  
+  }
   return(data)
 }
