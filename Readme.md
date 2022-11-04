@@ -116,7 +116,7 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
 
 4. Fertig.
 
-5. **Neu:2023**: Zwei funktionen helfen bei der Fehlerbehebung: `corrections.change.name()` und `corrections.merge.duplicates()`
+5. **Neu:2023**: Zwei Funktionen helfen bei der Fehlerbehebung: `corrections.change.name()` und `corrections.merge.duplicates()`
 
 
 ## 3. Zusammenführen mit früheren Aufnahmen:
