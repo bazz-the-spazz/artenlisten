@@ -39,9 +39,8 @@ Mit diesem Script erstellt man leicht Aufnahmebögen (als PDF) für Vegetationsa
     - `kopf=`: Was ist der Name der Datei die den Kopf enthält. Standard ist "kopf.md".
     - `fuss=`: Was soll nebst dem Plotnamen noch in der Fusszeile stehen. Standard ist der Titel.
     - `wald=`: Handelt es sich um Waldplots? und `waldextrablatt=`: soll ein leeres Blatt angefügt werden wenn nicht mehr viel Platz (~8 Zeilen) übrig sind.
-    - ***NEU für 2022***:
-      -  `extrazeile=`: Eine zusätzliche Information kann zwischen Kopf und Tabelle eingefügt werden.
-      - `find.in.head=` & `replace.in.head=`: Eine Textzeile im Titel kann angepasst werden
+    - `extrazeile=`: Eine zusätzliche Information kann zwischen Kopf und Tabelle eingefügt werden.
+    - `find.in.head=` & `replace.in.head=`: Eine Textzeile im Titel kann angepasst werden
 
     **Beispiel:** `artenliste(daten = "daten.csv", kopf = "kopf.md", titel = "Vegetationsaufnahme SADE Grünland Alb (2018)", fuss="SADE 2018", wald=FALSE)`
 
