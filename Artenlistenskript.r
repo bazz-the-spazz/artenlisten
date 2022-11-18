@@ -116,7 +116,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 			table <- c(header,arten,end,"")  # table consists of header, list and end
 		}
 
-		if(length(arten)>cutoff & length(arten)<(cutoff*2)  & !wald){ #wenn die Arten die zeilenanzahl von cutoff überschreiten-> 2 zeilen machen
+		if(length(arten)>cutoff & length(arten)<=(cutoff*2)  & !wald){ #wenn die Arten die zeilenanzahl von cutoff überschreiten-> 2 zeilen machen
 			a1 <- arten[1:cutoff]
 			a2 <- arten[(cutoff+1):length(arten)]
 			if(length(a1) !=length(a2) ) a2 <- c(a2, rep("", (length(a1)-length(a2) )))
