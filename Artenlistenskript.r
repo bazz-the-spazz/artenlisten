@@ -110,7 +110,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 	title <- paste("\\centering \\section*{", names(data)[i]," ", titel, "}","\\markboth{/", totpage, " | ", names(data)[i]," ",fuss, "}{", names(data)[i]," ",fuss,"}", sep="")
 	##
 
-		if(length(arten)<cutoff & !wald){   # how to generate the list when less species than the short cutoff
+		if(length(arten)<=cutoff & !wald){   # how to generate the list when less or equal species than the short cutoff
 			arten <- c(arten, rep("", (cutoff-length(arten) )))
 			arten <- paste( "\\phantom{--} &", arten, "& \\phantom{--}  & \\\\\\hline")
 			table <- c(header,arten,end,"")  # table consists of header, list and end
@@ -172,6 +172,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 	     x = c(x, c("\\setcounter{page}{1}", title, "", head, extrazeile[i], "" ,size, table, "\\newpage", ""))
 	} else {
 	  x = c(x, c("\\setcounter{page}{1}", title, "", head, "", size, table, "\\newpage", ""))
+	  rm(table)
 	}
 		# write(x = c("\\setcounter{page}{1}", title, "", head, "", size, table, "\\newpage"), file = paste("./md/",names(data)[i], ".md", sep=""), ncolumns = 1)  # write the md file
 
@@ -467,13 +468,31 @@ corrections.merge.duplicates <- function(data, plot, species, method="higher"){
 }
 
 ## Change species names
-corrections.change.name <- function(from, to, data){
+corrections.change.name <- function(from, to, data, grep=F){
+	count <- 0
+	replaced <- character()
 	if(is.list(data)){
-		for(i in 1:length(data))
-			data[[i]][,2] <- gsub(pattern = from, replacement = to, data[[i]][,2])
+		for(i in 1:length(data)){
+			if(grep){
+				x <- data[[i]][,2]
+				replaced <- unique(c(replaced, x[grep(from, x)]))
+				x[grep(from, x)] <- to
+				x -> data[[i]][,2]
+			} else {
+				count <- count + length(which( data[[i]][,2]==from))
+				data[[i]][,2] <- gsub(pattern = from, replacement = to, data[[i]][,2])
+			}
+		}
 	} else {
-	data[,2] <- gsub(pattern = from, replacement = to, data[,2])
+		if(grep){
+			replaced <-	unique(data[grep(from, data[,2]),2])
+			unique(data[grep(from, data[,2]),2]) <- to
+		} else {
+			count <- length(which(data[,2]==from))
+			data[,2] <- gsub(pattern = from, replacement = to, data[,2])
+		}
 	}
+	if(grep) cat(paste(replaced[replaced!=to], "was replaced with", to, "\n")) else cat(paste(from, "was found", count, "times.\n"))
 	return(data)
 }
 
@@ -482,7 +501,7 @@ corrections.change.name <- function(from, to, data){
 
 
 
-# Function to append new date from the new year to the entire data from the previous years
+# Function to append new date from the new year to the e ntire data from the previous years
 
 merge.old.new <- function(old, new, first.species.old){
 
