@@ -460,12 +460,16 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
 corrections.merge.duplicates <- function(data, plot, species, method="higher"){
 	x <- data[data[,1]==plot & data[,2]==species & !is.na(data[,2]) ,] # get the offending species from the plot
 	rn <- row.names(x) # get the rownames
-	if(method=="higher") data[rn[1],3] <- as.character(max(as.numeric(x$X3), na.rm = T))  #sum up the two entries and write it down for the first entry
-	if(method=="sum") data[rn[1],3] <- as.character(sum(as.numeric(x$X3), na.rm = T))  #sum up the two entries and write it down for the first entry
-	if(method=="mean") data[rn[1],3] <- as.character(mean(as.numeric(x$X3), na.rm = T))  # alternativels take the mean
+	for(i in 3:ncol(data)){ if(!is.na(max(as.numeric(x[,i])))){ # in the forest there are 4 columns with data
+		if(method=="higher") data[rn[1],i] <- as.character(max(as.numeric(x[,i]), na.rm = T))  #sum up the two entries and write it down for the first entry
+		if(method=="sum") data[rn[1],i] <- as.character(sum(as.numeric(x[,i]), na.rm = T))  #sum up the two entries and write it down for the first entry
+		if(method=="mean") data[rn[1],i] <- as.character(mean(as.numeric(x[,i]), na.rm = T))  # alternativels take the mean
+	}}
 	data <- data[!(rownames(data) %in% rn[-1]),]  # remove all but the first entry from the data
 	return(data)
 }
+
+
 
 ## Change species names
 corrections.change.name <- function(from, to, data, grep=F){
@@ -551,7 +555,29 @@ merge.old.new <- function(old, new, first.species.old){
 # merge.old.new(old = o, new = n, first.species.old = 3)
 
 
+# Function to append new date from spring and summer (Forest)
 
+merge.früh.spät <- function(früh, spät, erste = 10){
+	früh$Bemerkungen <- ifelse(is.na(früh$Bemerkungen), paste("Date Frühblüher:", früh$Datum), paste(früh$Bemerkungen,"Date:", früh$Datum))
+
+	früh <- früh[rowSums(früh[,erste:ncol(früh)], na.rm = T)>0,]
+	rownames(spät) <- spät$Plotcode
+	rownames(früh) <- paste(früh$Plotcode, "_K", sep = "" )
+	for(i in rownames(früh)){
+		spät[i,"Bemerkungen" ] <- ifelse(is.na(spät[i,"Bemerkungen"]), paste("Spring:", früh[i,"Bemerkungen"]), paste(spät[i,"Bemerkungen"],"|Spring:", früh[i,"Bemerkungen"]))
+		spät[i,"BerarbeiterIn" ] <- ifelse(is.na(spät[i,"BerarbeiterIn"]), paste("Spring:", früh[i,"BerarbeiterIn"]), paste(spät[i,"BerarbeiterIn"],"|Spring:", früh[i,"BerarbeiterIn"]))
+		for(j in names(früh)[erste:ncol(früh)]){
+			if(!is.na(früh[i,j])){
+				if(is.null(spät[i,j])){
+					spät$X <- 0
+					names(spät)[ncol(spät)] <- j
+				}
+				spät[i,j] <- ifelse(spät[i,j]>früh[i,j], spät[i,j], früh[i,j])
+			}
+		}
+	}
+	return(spät)
+}
 
 # Function to sum two or more species to a new column.
 aggregate.species <- function(data, from, to, order.from.which.column, method="sum"){

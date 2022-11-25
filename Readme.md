@@ -118,6 +118,8 @@ Um die Ausgefüllten Aufnahmebögen leichter einzutippen kann mit der Funktion  
 
 5. **Neu:2023**: Zwei Funktionen helfen bei der Fehlerbehebung: `corrections.change.name()` und `corrections.merge.duplicates()`
 
+6. **Neu:2023**: Funktion zum Zusammenfügen der Frühblüher- und SommerWaldaufnahmen: `merge.früh.spät()`
+
 
 ## 3. Zusammenführen mit früheren Aufnahmen:
 
