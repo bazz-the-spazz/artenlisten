@@ -619,10 +619,11 @@ aggregate.species <- function(data, from, to, order.from.which.column, method="s
   if(missing(data) | missing(from) | missing(to)) {warning("something essential is missing", call. = F) ;break}
   # Kick out those that are not in the data set
   from <- from[which(from %in% names(data))]
-  # if only one from: rename column, else start the process
-  if(length(from) == 1){
+  # if only one from (and to not in data: rename column, else start the process
+  if(length(from) == 1 & !(to %in% names(data))){
     names(data)[which(names(data)==from)] <- to
   } else {
+  	from <- unique(c(from,to))
     # Create column
     data[,ncol(data)+1] <- NA
     # aggregate species
