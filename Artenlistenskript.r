@@ -296,10 +296,21 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
 
 
   d <- read.xlsx( inputfilename.xlsx[1] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL)
+  # add dummy line
+  rbind(d,d[nrow(d),])
+  d[nrow(d),2] <- "z"
+  d[nrow(d),3] <- NA
+
   if(length(inputfilename.xlsx)>1) {
     for(i in 2:length(inputfilename.xlsx)){
       dd <- read.xlsx( inputfilename.xlsx[i] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL)
       if(ncol(d) != ncol(dd)) stop("Empty data files have not the same number of columns. Did you mix Forest plots with Grassland or Spring flowers?", call. = F)
+
+      # add dummy line
+      rbind(d,d[nrow(d),])
+      d[nrow(d),2] <- "z"
+      d[nrow(d),3] <- NA
+
       d <- rbind(d,dd)
     }
   }
@@ -307,7 +318,8 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
   head(d)
   d <- d[,2:ncol(d)]
   names(d)[1] <- "V1"
-  # find where are the plotnames
+
+    # find where are the plotnames
   pn <- which(substr(d[,1], 1, 5) == "Plot_"  )
   pn <- c(pn, nrow(d))
 
@@ -431,6 +443,9 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
         # cat( mess )
       }
     }
+
+    # x <- x[, !(names(x) %in% "z")]
+
     return(x)
 
   }
@@ -446,7 +461,7 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
     D[, i] <- as.numeric(as.character(D[,i]))
   }
   D$Plotcode <- rownames(D)
-  D <- D[,c("Plotcode", names(D)[-which(names(D)=="Plotcode")])]
+  D <- D[,c("Plotcode", names(D)[-which(names(D) %in% c("Plotcode", "z"))])]
   rownames(D) <- NULL
 
   if(missing(outputfilename.xslx)) return(D) else write.xlsx(D, file = outputfilename.xslx)
@@ -556,11 +571,11 @@ merge.old.new <- function(old, new, first.species.old){
 
 
 # Function to append new date from spring and summer (Forest)
-
-merge.früh.spät <- function(früh, spät, erste = 10){
+merge.früh.spät <- function(früh, spät, erste = 10, woody){
+	# Merge notes and date in spring
 	früh$Bemerkungen <- ifelse(is.na(früh$Bemerkungen), paste("Date Frühblüher:", früh$Datum), paste(früh$Bemerkungen,"Date:", früh$Datum))
 
-	früh <- früh[rowSums(früh[,erste:ncol(früh)], na.rm = T)>0,]
+	früh <- früh[rowSums(früh[,erste:ncol(früh)], na.rm = T)>0,] # get rid of empty rows in Frühling
 	rownames(spät) <- spät$Plotcode
 	rownames(früh) <- paste(früh$Plotcode, "_K", sep = "" )
 	for(i in rownames(früh)){
@@ -576,8 +591,27 @@ merge.früh.spät <- function(früh, spät, erste = 10){
 			}
 		}
 	}
+
+	#Create Layer Infos and prune Plotcode
+	nc <- max(nchar(spät$Plotcode))
+	spät$Layer <- gsub("K", "H" , substr(spät$Plotcode,nc-1,nc ))
+	spät$Plotcode <- substr(spät$Plotcode,1,nc-3 )
+
+	# But the woody species to the Strauch
+	if(!missing(woody)){
+		for(i in woody[which(woody %in% names(spät))]){
+			x <- which(spät[,i]>0 & spät$Layer=="H")
+			for(j in x){
+				S <- spät[spät$Plotcode==spät$Plotcode[j] & spät$Layer=="S", i]
+				H <- spät[spät$Plotcode==spät$Plotcode[j] & spät$Layer=="H", i]
+				spät[spät$Plotcode==spät$Plotcode[j] & spät$Layer=="S", i] <- max(c(S,H), na.rm = T)
+				spät[spät$Plotcode==spät$Plotcode[j] & spät$Layer=="H", i] <- 0
+			}
+		}
+	}
 	return(spät)
 }
+
 
 # Function to sum two or more species to a new column.
 aggregate.species <- function(data, from, to, order.from.which.column, method="sum"){
