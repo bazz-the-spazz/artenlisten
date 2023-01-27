@@ -1,5 +1,7 @@
 # Scripte zur Verwaltung von Artenlisten für Vegetationsaufnahmen 
 
+![](https://imgs.xkcd.com/comics/code_lifespan.png)
+
 ## 1. Herstellung von Aufnahmebögen
 
 Mit diesem Script erstellt man leicht Aufnahmebögen (als PDF) für Vegetationsaufnahmen. 
