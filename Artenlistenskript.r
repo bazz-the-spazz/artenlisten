@@ -297,9 +297,9 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
 
   d <- read.xlsx( inputfilename.xlsx[1] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL)
   # add dummy line
-  rbind(d,d[nrow(d),])
+  d <- rbind(d,d[nrow(d),])
   d[nrow(d),2] <- "z"
-  d[nrow(d),3] <- NA
+  d[nrow(d),3:ncol(d)] <- NA
 
   if(length(inputfilename.xlsx)>1) {
     for(i in 2:length(inputfilename.xlsx)){
@@ -307,9 +307,9 @@ eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx"
       if(ncol(d) != ncol(dd)) stop("Empty data files have not the same number of columns. Did you mix Forest plots with Grassland or Spring flowers?", call. = F)
 
       # add dummy line
-      rbind(d,d[nrow(d),])
-      d[nrow(d),2] <- "z"
-      d[nrow(d),3] <- NA
+      dd <- rbind(dd,dd[nrow(dd),])
+      dd[nrow(dd),2] <- "z"
+      dd[nrow(dd),3:ncol(dd)] <- NA
 
       d <- rbind(d,dd)
     }
@@ -524,7 +524,7 @@ corrections.change.name <- function(from, to, data, grep=F){
 
 merge.old.new <- function(old, new, first.species.old){
 
-
+	if(!is.numeric(first.species.old)) first.species.old <- which(names(old)==first.species.old)
   # is head complete
   stop<- FALSE
   if(length(unique(names(old)[1:(first.species.old-1)] %in% names(new))) != 1) {
@@ -637,8 +637,9 @@ aggregate.species <- function(data, from, to, order.from.which.column, method="s
     # data[data[,ncol(data)]==0, ncol(data)] <- NA
   }
   # order columns alphabethically
+
   if(!missing(order.from.which.column)){
-    if(is.character(order.from.which.column)) order.from.which.column <- which(names(data)==order.from.which.column)
+  	if(is.character(order.from.which.column)) order.from.which.column <- which(names(data)==order.from.which.column)
     if(order.from.which.column==1) data <- data[, sort(names(data))] else {
       data <- data[, c( names(data)[1:(order.from.which.column-1)], sort(names(data)[order.from.which.column:ncol(data)]))]
     }
@@ -650,7 +651,8 @@ aggregate.species <- function(data, from, to, order.from.which.column, method="s
 
 # function to turn 0 into NA or vice-versa
 zeros2na <- function(data, umbekehrt=TRUE, first.species){ # Function to replace all 0 to NA
-  if(missing(first.species)) first.species <- 1
+
+  if(missing(first.species)) first.species <- 1 else if(!is.numeric(first.species)) first.species <- which(names(data)==first.species)
 
 
   if(umbekehrt){
@@ -674,6 +676,8 @@ zeros2na <- function(data, umbekehrt=TRUE, first.species){ # Function to replace
 # wurde der plot erhoben? Function to convert plots without any record (in a year) to NA
 plot.surveyed <- function(data, first.species, index){
   if(missing(index)) py <- paste(data$Useful_EPPlotID, data$Year) else py <- index
+
+  if(missing(first.species)) warning("First species missing") else if(!is.numeric(first.species)) first.species <- which(names(data)==first.species)
 
   for( i in unique(py)){
     if( sum(data[py==i, first.species:ncol(data)], na.rm = T)==0){
