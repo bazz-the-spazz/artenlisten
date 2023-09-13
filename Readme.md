@@ -146,7 +146,7 @@ Die neue Tabelle kann mit den bisherigen Aufnahmen zusammengefügt werden.
 
 #### Arten zusammenlegen
 
-Es kann vorkommen, dass eine Art unter mehreren Namen aufgenommen wurde mit der Funktion `aggregate.species`können diese zusammengelegt werden:
+Es kann vorkommen, dass eine Art unter mehreren Namen aufgenommen wurde mit der Funktion `aggregate.species()` können diese zusammengelegt werden:
 
 - Argumente:
   - `data=`: Name des Dataframe
@@ -177,5 +177,19 @@ Es kann sein, dass in einem bestimmten Jahr ein Plot gar nicht besucht wurde und
   - `first.species`: Nummer der Spalte mit der ersten Art
   - `index=`: Ein eindeutiger Index für alle Plot X Jahr Kombinationen. Standard ist `index <- paste(data$Useful_EPPlotID, data$Year)`
 
+### Kontrolle (*neu für 2023*)
+
+Oft müssen viele kleine und grössere Sachen angepasst werden. Tippfehler beheben, Arten zusammenlegen usw. Damit man nicht den Überblick verliert gibt es nun die `comparo()` Funktion. Damit können zwei Tabellen verglichen werden (z.B. vor und nach den Korrekturen). 
+
+- Argumente:
+  - `d1=` erste Tabelle
+  - `d2=` zweite Tabelle
+  - `ID=` eindeutiger Spalte (z.B. Plotcode)
+  - `subset=` welche Spalten sollen verglichen werden.
+  - `output=` wenn `console` dann werden die Resultate direkt in die Konsole ausgegeben. Wenn `data`, werden die Resultate in ein data.frame geschrieben.
+  - `stop.after=` wieviele Unterschiede sollen angezeigt werden.
+  
+          
+  
 
 
