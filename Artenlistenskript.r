@@ -686,3 +686,92 @@ plot.surveyed <- function(data, first.species, index){
   }
   return(data)
 }
+
+
+
+# how was data in a dataframe changed. The comparo function helps tracking changes that were made to data! Just add in two dataframes and define an unique identifier (column) and let it run!!!
+comparo <- function(d1, d2, ID, stop.after=50, subset, output="console"){
+
+	if((ID %in% names(d1) & ID %in% names(d2))==FALSE){ # The ID column has to be in both datasets
+		cat(paste(ID, "was not found in both datasets"))
+		} else{
+
+		if(!missing(subset)){ # you can specify a subset of columns which to compare. This can be names or numbers
+			if(is.numeric(subset)) subset <- names(d1)[subset] # if numbers are chosen, translate to names
+			subset <- unique(c(ID, subset))
+			d1 <- d1[,subset]
+			d2 <- d2[,subset]
+		}
+
+		if(identical(names(d1), names(d2))==FALSE){ # are the columns identical?
+			if(length(which(!(names(d1) %in% names(d2))))>0){
+				cat(paste("These columns are in d1 but missing in d2:", names(d1)[which(!(names(d1) %in% names(d2)))], "\n", sep="\n"))
+			}
+			if(length(which(!(names(d2) %in% names(d1))))>0){
+				cat(paste("These columns are in d2 but missing in d1:", names(d2)[which(!(names(d2) %in% names(d1)))], "\n", sep="\n"))
+			}
+		} else {
+			if(length(unique(d1[,ID]))!=nrow(d1) | length(unique(d2[,ID]))!=nrow(d2)) { #Is the ID unique? Sometimes this might be a problem with years. You can paste plot and year to get a unique ID
+				cat("\nID is not unique. ")
+			} else {
+				if(identical(sort(d1[,ID]), sort(d2[,ID]))==FALSE) { # Are all IDs in both dataset. Order doesnt matter
+					if(length(which(!(d1[,ID] %in% d2[,ID])))>0){
+						cat(paste("These IDs are in d1 but missing in d2", d1[which(!(d1[,ID] %in% d2[,ID])), ID], "\n", sep="\n"))
+					}
+					if(length(which(!(d2[,ID] %in% d1[,ID])))>0){
+						cat(paste("These IDs are in d2 but missing in d1", d2[!(d2[,ID] %in% d1[,ID]), ID], "\n", sep="\n"))
+					}
+				} else { # good. Here we can start the loop that compares the datasets
+
+					I <- 1 # Index for the stop and to show the number of the difference
+					if(output!="console"){
+						R <- data.frame(ID=NA, col=NA, d1=NA, d2=NA)[0,]
+						stop.after <- prod(dim(d1))
+					}
+					
+					for(j in names(d1)){
+						for(i in d1[,ID]){
+
+							if(is.na(d1[d1[,ID]==i,j])) d1[d1[,ID]==i,j] <- "NA" # NA's are translated into "NA" to avoid problems
+							if(is.na(d2[d2[,ID]==i,j])) d2[d2[,ID]==i,j] <- "NA"
+							if(d1[d1[,ID]==i,j]!=d2[d2[,ID]==i,j]){ # Check if two values are identical
+								if(output=="console"){
+									cat(paste("\n\n", I, ". Difference detected in '", j, "' of '", i, "':\nd1:  ", d1[d1[,ID]==i,j], "\nd2:  ", d2[d2[,ID]==i,j], sep = "" ))
+									} else {
+									R[I, "ID"] <- i
+									R$col[I] <- j
+									R$d1[I] <- d1[d1[,ID]==i,j]
+									R$d2[I] <- d2[d2[,ID]==i,j]
+								}
+																
+								I <- I+1
+								if(I==stop.after+1) break
+							}
+							if(I==stop.after+1) break
+						}
+						if(I==stop.after+1) break
+					}
+					if(I==stop.after+1) cat(paste("\n\nComparing was stopped after ", stop.after, ". There might be more differences", sep = "")) # tell the user that there might be more differences
+				}
+			}
+		}
+	}
+	if(output!="console") return(R)
+}
+
+#
+#
+# d1 <- read.xlsx("Rohdaten/REXLUX/RP_UP_2023 Header_vorlage.xlsx")
+# d2 <- read.xlsx("Results/REXLUX/RP_UP_2023 Header.xlsx")
+# ID <- "useful.PlotID"
+#
+# comparo(d1,d2, ID, stop.after = 50, subset = c(1:9,11,12))  #comparo with numerical subset
+# comparo(d1,d2, ID, stop.after = 50, subset = names(d1)[c(1:9,11,12)]) # comparo with character subset
+# comparo(d1[1:4,],d2[1:4,], ID, stop.after = 11) # comparo with early stopping
+# comparo(d1[sample(1:nrow(d1)),],d2, ID, stop.after = 50, subset = c(1:9,11,12))  #comparo with numerical subset and reordered data
+
+
+
+
+
+	
