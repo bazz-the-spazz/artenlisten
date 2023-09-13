@@ -688,7 +688,7 @@ plot.surveyed <- function(data, first.species, index){
 }
 
 
-
+# COMPARO
 # how was data in a dataframe changed. The comparo function helps tracking changes that were made to data! Just add in two dataframes and define an unique identifier (column) and let it run!!!
 comparo <- function(d1, d2, ID, stop.after=50, subset, output="console"){
 
@@ -728,7 +728,7 @@ comparo <- function(d1, d2, ID, stop.after=50, subset, output="console"){
 						R <- data.frame(ID=NA, col=NA, d1=NA, d2=NA)[0,]
 						stop.after <- prod(dim(d1))
 					}
-					
+
 					for(j in names(d1)){
 						for(i in d1[,ID]){
 
@@ -743,7 +743,7 @@ comparo <- function(d1, d2, ID, stop.after=50, subset, output="console"){
 									R$d1[I] <- d1[d1[,ID]==i,j]
 									R$d2[I] <- d2[d2[,ID]==i,j]
 								}
-																
+
 								I <- I+1
 								if(I==stop.after+1) break
 							}
@@ -774,4 +774,4 @@ comparo <- function(d1, d2, ID, stop.after=50, subset, output="console"){
 
 
 
-	
+
