@@ -289,31 +289,50 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
 
 
 ## read formular and create a big, unified table
-eingabeformular2tabelle <- function( inputfilename.xlsx = "Eingabeformular.xlsx", kopf, outputfilename.xslx, fuzzy=T, write.fuzzy.mistakes= FALSE, wald=FALSE){
+eingabeformular2tabelle <- function( inputfilename.xlsx, input.data, kopf, outputfilename.xslx, fuzzy=T, write.fuzzy.mistakes= FALSE, wald=FALSE){
 
-  require(openxlsx)
+	if(!missing(inputfilename.xlsx)){
+	  require(openxlsx)
+	  d <- read.xlsx( inputfilename.xlsx[1] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL)
+	  # add dummy line
+	  d <- rbind(d,d[nrow(d),])
+	  d[nrow(d),2] <- "z"
+	  d[nrow(d),3:ncol(d)] <- NA
 
+	  if(length(inputfilename.xlsx)>1) {
+	    for(i in 2:length(inputfilename.xlsx)){
+	      dd <- read.xlsx( inputfilename.xlsx[i] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL)
+	      if(ncol(d) != ncol(dd)) stop("Empty data files have not the same number of columns. Did you mix Forest plots with Grassland or Spring flowers?", call. = F)
 
+	      # add dummy line
+	      dd <- rbind(dd,dd[nrow(dd),])
+	      dd[nrow(dd),2] <- "z"
+	      dd[nrow(dd),3:ncol(dd)] <- NA
 
-  d <- read.xlsx( inputfilename.xlsx[1] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL)
-  # add dummy line
-  d <- rbind(d,d[nrow(d),])
-  d[nrow(d),2] <- "z"
-  d[nrow(d),3:ncol(d)] <- NA
+	      d <- rbind(d,dd)
+	    }
+	  }
+	}
 
-  if(length(inputfilename.xlsx)>1) {
-    for(i in 2:length(inputfilename.xlsx)){
-      dd <- read.xlsx( inputfilename.xlsx[i] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL)
-      if(ncol(d) != ncol(dd)) stop("Empty data files have not the same number of columns. Did you mix Forest plots with Grassland or Spring flowers?", call. = F)
+  if(!missing(input.data)){
+  	colnames21strow <- function(x, dummyline=T){
+  		xx <- xxx <- x[1,]
+  		xx[1,] <- t(names(x))
+  		xxx[1,] <- t(rep(NA, ncol(x)))
+  		if(dummyline) x <- rbind(xx,x, xxx) else x <- rbind(xx,x)
+  		names(x) <- paste("V", 1:ncol(x), sep = "")
+  		return(x)
+  	}
 
-      # add dummy line
-      dd <- rbind(dd,dd[nrow(dd),])
-      dd[nrow(dd),2] <- "z"
-      dd[nrow(dd),3:ncol(dd)] <- NA
-
-      d <- rbind(d,dd)
-    }
+  	if(is.null(dim(input.data))) {
+  		for(i in 1:length(input.data)) input.data[[i]] <- colnames21strow(input.data[[i]])
+  		d <- do.call(rbind, input.data)
+  	} else {
+  		d <- input.data
+  	}
   }
+
+
   if(ncol(d)==2) stop("Empty data file: Abort!", call. = F)
   head(d)
   d <- d[,2:ncol(d)]
