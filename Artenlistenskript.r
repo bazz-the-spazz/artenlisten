@@ -597,9 +597,10 @@ merge.früh.spät <- function(früh, spät, erste = 10, woody){
 	früh <- früh[rowSums(früh[,erste:ncol(früh)], na.rm = T)>0,] # get rid of empty rows in Frühling
 	rownames(spät) <- spät$Plotcode
 	rownames(früh) <- paste(früh$Plotcode, "_K", sep = "" )
+
 	for(i in rownames(früh)){
 		spät[i,"Bemerkungen" ] <- ifelse(is.na(spät[i,"Bemerkungen"]), paste("Spring:", früh[i,"Bemerkungen"]), paste(spät[i,"Bemerkungen"],"|Spring:", früh[i,"Bemerkungen"]))
-		spät[i,"BerarbeiterIn" ] <- ifelse(is.na(spät[i,"BerarbeiterIn"]), paste("Spring:", früh[i,"BerarbeiterIn"]), paste(spät[i,"BerarbeiterIn"],"|Spring:", früh[i,"BerarbeiterIn"]))
+		spät[i,"BearbeiterIn" ] <- ifelse(is.na(spät[i,"BearbeiterIn"]), paste("Spring:", früh[i,"BearbeiterIn"]), paste(spät[i,"BearbeiterIn"],";Spring:", früh[i,"BearbeiterIn"]))
 		for(j in names(früh)[erste:ncol(früh)]){
 			if(!is.na(früh[i,j])){
 				if(is.null(spät[i,j])){
@@ -616,7 +617,7 @@ merge.früh.spät <- function(früh, spät, erste = 10, woody){
 	spät$Layer <- gsub("K", "H" , substr(spät$Plotcode,nc-1,nc ))
 	spät$Plotcode <- substr(spät$Plotcode,1,nc-3 )
 
-	# But the woody species to the Strauch
+	# Put the woody species to the Strauch
 	if(!missing(woody)){
 		for(i in woody[which(woody %in% names(spät))]){
 			x <- which(spät[,i]>0 & spät$Layer=="H")
