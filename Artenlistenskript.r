@@ -590,6 +590,7 @@ merge.old.new <- function(old, new, first.species.old){
 
 
 # Function to append new date from spring and summer (Forest)
+
 merge.früh.spät <- function(früh, spät, erste = 10, woody){
 	# Merge notes and date in spring
 	früh$Bemerkungen <- ifelse(is.na(früh$Bemerkungen), paste("Date Frühblüher:", früh$Datum), paste(früh$Bemerkungen,"Date:", früh$Datum))
@@ -614,8 +615,15 @@ merge.früh.spät <- function(früh, spät, erste = 10, woody){
 
 	#Create Layer Infos and prune Plotcode
 	nc <- max(nchar(spät$Plotcode))
-	spät$Layer <- gsub("K", "H" , substr(spät$Plotcode,nc-1,nc ))
-	spät$Plotcode <- substr(spät$Plotcode,1,nc-3 )
+	layer <- substr(spät$Plotcode, nchar(spät$Plotcode)-1, nchar(spät$Plotcode))
+	layer <- gsub("K", "H", layer)
+	w <- substr(spät$Plotcode[nchar(spät$Plotcode)==nc][1], nc-2,nc-2) # get the character that seperates plotcode from layer
+	layer <- gsub(w, "", layer)
+	spät$Layer <- layer
+
+	plotcode <- substr(spät$Plotcode,1,nchar(spät$Plotcode)-2 )
+	spät$Plotcode <- gsub(w, "", plotcode)
+	früh$Plotcode <- gsub(w, "", früh$Plotcode) # also remove 'w' from früh
 
 	# Put the woody species to the Strauch
 	if(!missing(woody)){
@@ -631,6 +639,10 @@ merge.früh.spät <- function(früh, spät, erste = 10, woody){
 	}
 	return(spät)
 }
+
+
+
+
 
 
 # Function to sum two or more species to a new column.
