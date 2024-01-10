@@ -47,6 +47,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 
 
   x <- character()
+  if("NEW.ORDER" %in% unlist(as.vector(data))) new.order=TRUE else new.order=FALSE
   ## Loop
 	for (i in 1:ncol(data)){ #loop for each column (=each Plot) of the data
 
@@ -56,10 +57,15 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 		                     "\\textbf{Arten} \\phantom{ChrysospleniumChrysospleniumChrysosplen} & \\textbf{K} & \\textbf{S}\\tiny{<5m} & \\textbf{B1}\\tiny{<10} & \\textbf{B2}\\tiny{>10m} \\\\\\hline") # this is the wald header
 		end <- "\\end{tabularx}"  # this ends the table
 		arten <- as.character(data[,i])   # this is the list of speceis
-		arten <- arten[which(arten!="")]   #cleanup
-		arten <- unique(arten)  #cleanup
-    arten <- gsub("_"," ",arten)    # remove underlines
-    arten <- sort(arten)          # sort
+	  arten <- gsub("_"," ",arten)    # remove underlines
+
+	  if(new.order){
+			arten <- arten[which(arten!="NEW.ORDER")]   #cleanup
+		} else {
+			arten <- sort(arten)          # sort
+			arten <- arten[which(arten!="")]   #cleanup
+			arten <- unique(arten)  #cleanup
+		}
 
 
 		cutoff <- 42-length(head) + table.length.adjust   # this is how many rows the list has on the 1st page. It gets shorter when the head is longer
@@ -190,6 +196,11 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 }
 
 
+
+
+
+
+
 # create eingabeformular
 eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformular.xlsx", dummy=FALSE, overwrite=FALSE){
   library(openxlsx)
@@ -207,13 +218,16 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
 
   if(!missing(explo)) d <- d[, which(substr(names(d), 1,1)==explo)]
 
+  if("NEW.ORDER" %in%  unlist(as.vector(d))) new.order <- TRUE else new.order=FALSE
+
   l <- character()
   for( i in 1:ncol(d)){
     l <- c(l,
       paste("Plot_", names(d)[i], sep = ""),
       if(wald) "Layer",
       if(!missing(kopf)) kopf,
-      sort(unique(d[d[,i]!="",i])),
+      "",
+      if(new.order) d[d[,i]!="NEW.ORDER",i] else sort(unique(d[d[,i]!="",i])),
       rep("", 5)
     )
   }
@@ -805,5 +819,32 @@ comparo <- function(d1, d2, ID, stop.after=50, subset, output="console"){
 
 
 
+## Function to order the species into grasses and rest. requires the new.order=TRUE in artenliste()
+sort.as.funcgroup.data23 <- function(df, info=read.xlsx("../Aufnahmebögen2023/Eingabeformulare_ausgefüllt/Übersetzungen.xlsx"), toad){
+	info <- info[,c("In.Daten", "funcgroup")]
+	rownames(info) <- info[,1]
+	l <- list()
+	m <- 0
+	for(i in 1:ncol(df)){
+		x <- df[,i]
+		x <- x[x!=""]
+		if(!missing(toad)) x <- unique(c(x,toad))
+		x <- info[x,]
+		if("Gräser" %in% x$funcgroup){
+			x <- c("Gräser", sort(x[x$funcgroup=="Gräser",1]), "", "", "Rest", sort(x[x$funcgroup!="Gräser",1]))
+		} else {
+			x <- sort(x[,1])
+		}
+		l[[i]] <- x
+		if(length(l[[i]])>m) m <- length(l[[i]])
+	}
+	names(l) <- names(df)
+	for(i in 1:ncol(df)){
+		le <- length(l[[i]])
+		l[[i]] <- c(l[[i]], rep("NEW.ORDER", m-le))
+	}
 
+	r <- as.data.frame(do.call(cbind, l))
+	return(r)
+}
 
