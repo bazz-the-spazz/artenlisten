@@ -202,7 +202,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 
 
 # create eingabeformular
-eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformular.xlsx", dummy=FALSE, overwrite=FALSE){
+eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformular.xlsx", dummy=FALSE, overwrite=FALSE, , n.empty.rows=5){
   library(openxlsx)
 
 
@@ -228,7 +228,7 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
       if(!missing(kopf)) kopf,
       "",
       if(new.order) d[d[,i]!="NEW.ORDER",i] else sort(unique(d[d[,i]!="",i])),
-      rep("", 5)
+      rep("", n.empty.rows)
     )
   }
 
