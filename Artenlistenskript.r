@@ -202,7 +202,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 
 
 # create eingabeformular
-eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformular.xlsx", dummy=FALSE, overwrite=FALSE, , n.empty.rows=5){
+eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformular.xlsx", dummy=FALSE, overwrite=FALSE, n.empty.rows=5){
   library(openxlsx)
 
 
@@ -342,7 +342,7 @@ eingabeformular2tabelle <- function( inputfilename.xlsx, input.data, kopf, outpu
   		for(i in 1:length(input.data)) input.data[[i]] <- colnames21strow(input.data[[i]])
   		d <- do.call(rbind, input.data)
   	} else {
-  		d <- input.data
+  		d <- colnames21strow(input.data)
   	}
   }
 
@@ -407,6 +407,7 @@ eingabeformular2tabelle <- function( inputfilename.xlsx, input.data, kopf, outpu
   ch <- character()
   for(i in 1:length(l)){
     ch  <- c(ch, l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2])
+    		if(length(which(c(LETTERS, letters) %in% unlist(strsplit(gsub("NA", "",paste(l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2], collapse = "")),""))))>0) cat(paste("\n", "Letter found in non-head data of plot", names(l)[i], "\n")) # warn if non numeric data is found in particular plot
     l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2] <- gsub(" ", "", l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2]) # get rid of space (" ") in numeric data
     l[[i]] <- l[[i]][ !(l[[i]][,1] %in% c("", " ", "   ", "    ", "     ")),]  # get rid of empty lines
   }
@@ -441,14 +442,14 @@ eingabeformular2tabelle <- function( inputfilename.xlsx, input.data, kopf, outpu
     x <- x[ x$V1 %in% kopf | !is.na(x[,2]),]
     names(x)[2] <- names(lis)[1]
     alarm <- nrow(x)!=length(unique(x[,1]))
-    if(alarm) mess <- (paste("Error in ", names(x)[2], ", duplicted Species name: ", x[duplicated(x[,1]),1]  , "! \n", sep = ""))
+    if(alarm) mess <- (paste("Error in ", names(x)[2], ", duplicated Species name: ", x[duplicated(x[,1]),1]  , "! \n", sep = ""))
     for(i in 2:length(lis)){
       if(alarm) stop(mess, call. = F)
       y <- lis[[i]]
       if(missing(kopf)) y <- y[!is.na(y[,2]),] else y <- y[ y$V1 %in% kopf | !is.na(y[,2]),]
       names(y)[2] <- names(lis)[i]
       alarm <- nrow(y)!=length(unique(y[,1]))
-      if(alarm) mess <- (paste("Error in ", names(y)[2], ", duplicted Species name: ", y[duplicated(y[,1]),1]  , "! \n", sep = ""))
+      if(alarm) mess <- (paste("Error in ", names(y)[2], ", duplicated Species name: ", y[duplicated(y[,1]),1]  , "! \n", sep = ""))
       if(alarm) {stop(mess, call. = F )}
       x <- merge(x,y, by="V1", all = TRUE, sort = F)
     }
