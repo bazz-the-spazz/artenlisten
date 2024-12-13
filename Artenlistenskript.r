@@ -303,202 +303,210 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
 
 
 ## read formular and create a big, unified table
-eingabeformular2tabelle <- function( inputfilename.xlsx, input.data, kopf, outputfilename.xslx, fuzzy=T, write.fuzzy.mistakes= FALSE, wald=FALSE){
-
+eingabeformular2tabelle <- function( inputfilename.xlsx, input.data, kopf=character(), outputfilename.xslx, fuzzy=T, write.fuzzy.mistakes= FALSE, wald=FALSE){
+	
 	if(!missing(inputfilename.xlsx)){
-	  require(openxlsx)
-	  d <- read.xlsx( inputfilename.xlsx[1] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL)
-	  # add dummy line
-	  d <- rbind(d,d[nrow(d),])
-	  d[nrow(d),2] <- "z"
-	  d[nrow(d),3:ncol(d)] <- NA
-
-	  if(length(inputfilename.xlsx)>1) {
-	    for(i in 2:length(inputfilename.xlsx)){
-	      dd <- read.xlsx( inputfilename.xlsx[i] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL)
-	      if(ncol(d) != ncol(dd)) stop("Empty data files have not the same number of columns. Did you mix Forest plots with Grassland or Spring flowers?", call. = F)
-
-	      # add dummy line
-	      dd <- rbind(dd,dd[nrow(dd),])
-	      dd[nrow(dd),2] <- "z"
-	      dd[nrow(dd),3:ncol(dd)] <- NA
-
-	      d <- rbind(d,dd)
-	    }
-	  }
+		require(openxlsx)
+		d <- read.xlsx( inputfilename.xlsx[1] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL)
+		# add dummy line
+		d <- rbind(d,d[nrow(d),])
+		d[nrow(d),2] <- "z"
+		d[nrow(d),3:ncol(d)] <- NA
+		
+		if(length(inputfilename.xlsx)>1) {
+			for(i in 2:length(inputfilename.xlsx)){
+				dd <- read.xlsx( inputfilename.xlsx[i] , colNames = F, sheet = 1, skipEmptyRows = F, rows = NULL)
+				if(ncol(d) != ncol(dd)) stop("Empty data files have not the same number of columns. Did you mix Forest plots with Grassland or Spring flowers?", call. = F)
+				
+				# add dummy line
+				dd <- rbind(dd,dd[nrow(dd),])
+				dd[nrow(dd),2] <- "z"
+				dd[nrow(dd),3:ncol(dd)] <- NA
+				
+				d <- rbind(d,dd)
+			}
+		}
+	}
+	
+	if(!missing(input.data)){
+		colnames21strow <- function(x, dummyline=T){
+			xx <- xxx <- x[1,]
+			xx[1,] <- t(names(x))
+			xxx[1,] <- t(rep(NA, ncol(x)))
+			if(dummyline) x <- rbind(xx,x, xxx) else x <- rbind(xx,x)
+			names(x) <- paste("V", 1:ncol(x), sep = "")
+			return(x)
+		}
+		
+		if(is.null(dim(input.data))) {
+			for(i in 1:length(input.data)) input.data[[i]] <- colnames21strow(input.data[[i]])
+			d <- do.call(rbind, input.data)
+		} else {
+			d <- colnames21strow(input.data)
+		}
+	}
+	
+	
+	if(ncol(d)==2) stop("Empty data file: Abort!", call. = F)
+	head(d)
+	d <- d[,2:ncol(d)]
+	names(d)[1] <- "V1"
+	
+	# find where are the plotnames
+	pn <- which(substr(d[,1], 1, 5) == "Plot_"  )
+	pn <- c(pn, nrow(d))
+	d[pn,1]
+	
+	
+	#sort out numeric Kopf
+	if(is.numeric(kopf)) kopf <- d[pn[1]+kopf,1]
+	
+	
+	# create a list, each containing one plot and level (when forest)
+	l <- list()
+	for(i in 1:(length(pn)-1)) l[[i]] <- d[(pn[i]+1):(pn[i+1]-1),]
+	names(l) <- d[pn[1:(length(pn)-1)],1]
+	
+	if(ncol(d)>2){
+		if(wald==FALSE) warning("More than one column of data in datafile. Is it forest data?", call. = F)
+		ll <- list()
+		I <- 1
+		for(i in 1:length(l)){
+			for(j in 2:ncol(d)){
+				ll[[I]] <- data.frame(V1= l[[i]][,1], V2= l[[i]][,j])
+				ll[[I]] <- ll[[I]][!is.na(ll[[I]]$V1),]
+				names(ll)[I] <- paste( names(l)[i], ll[[I]][ll[[I]]$V1=="Layer"  ,2], sep= "_")
+				ll[[I]] <- ll[[I]][-which(ll[[I]]$V1=="Layer"),]
+				I <- I+1
+			}
+		}
+		l <- ll
+	}
+	
+	
+	# Sort out kopf!
+	if(missing(kopf)){ kopf <- character()} else {
+		if( !is.numeric(kopf)) if(!(identical(kopf %in% d[,1] , rep(TRUE, length(kopf))))){
+			cat(paste("Angegebene Kopfdaten nicht in Datei: ", kopf[!(kopf %in% d[,1])] , ". \n", sep=""))
+		}
+		
+		
+		
+		# sort data so that kopf is first
+		for(i in 1:length(l)){
+			if(length(which( !(kopf %in% l[[i]][,1])))>0) {
+				xx <- data.frame(V1= kopf[which( !(kopf %in% l[[i]][,1]))], "")
+				names(xx) <- names(l[[i]])
+				l[[i]] <- rbind(l[[i]][l[[i]][,1] %in% kopf,], xx, l[[i]][ !(l[[i]][,1] %in% kopf) ,])
+			} else {
+				l[[i]] <- rbind( l[[i]][l[[i]][,1] %in% kopf,], l[[i]][ !(l[[i]][,1] %in% kopf) ,])
+			}
+		}
 	}
 
-  if(!missing(input.data)){
-  	colnames21strow <- function(x, dummyline=T){
-  		xx <- xxx <- x[1,]
-  		xx[1,] <- t(names(x))
-  		xxx[1,] <- t(rep(NA, ncol(x)))
-  		if(dummyline) x <- rbind(xx,x, xxx) else x <- rbind(xx,x)
-  		names(x) <- paste("V", 1:ncol(x), sep = "")
-  		return(x)
-  	}
-
-  	if(is.null(dim(input.data))) {
-  		for(i in 1:length(input.data)) input.data[[i]] <- colnames21strow(input.data[[i]])
-  		d <- do.call(rbind, input.data)
-  	} else {
-  		d <- colnames21strow(input.data)
-  	}
-  }
-
-
-  if(ncol(d)==2) stop("Empty data file: Abort!", call. = F)
-  head(d)
-  d <- d[,2:ncol(d)]
-  names(d)[1] <- "V1"
-
-    # find where are the plotnames
-  pn <- which(substr(d[,1], 1, 5) == "Plot_"  )
-  pn <- c(pn, nrow(d))
-
-
-  # create a list, each containing one plot and level (when forest)
-  l <- list()
-  for(i in 1:(length(pn)-1)) l[[i]] <- d[(pn[i]+1):(pn[i+1]-1),]
-  names(l) <- d[pn[1:(length(pn)-1)],1]
-
-  if(ncol(d)>2){
-    if(wald==FALSE) warning("More than one column of data in datafile. Is it forest data?", call. = F)
-    ll <- list()
-    I <- 1
-    for(i in 1:length(l)){
-      for(j in 2:ncol(d)){
-        ll[[I]] <- data.frame(V1= l[[i]][,1], V2= l[[i]][,j])
-        names(ll)[I] <- paste( names(l)[i], ll[[I]][1,2], sep= "_")
-        ll[[I]] <- ll[[I]][-1,]
-        I <- I+1
-      }
-    }
-    l <- ll
-  }
-
-
-
-  # Sort out kopf!
-  if(missing(kopf)){ kopf <- character()} else {
-    if( !is.numeric(kopf)) if(!(identical(kopf %in% d[,1] , rep(TRUE, length(kopf))))){
-      cat(paste("Angegebene Kopfdaten nicht in Datei: ", kopf[!(kopf %in% d[,1])] , ". \n", sep=""))
-    }
-    if(is.numeric(kopf)) kopf <- l[[1]][kopf,1]
-
-
-    # sort data so that kopf is first
-    for(i in 1:length(l)){
-      if(length(which( !(kopf %in% l[[i]][,1])))>0) {
-        xx <- data.frame(V1= kopf[which( !(kopf %in% l[[i]][,1]))], "")
-        names(xx) <- names(l[[i]])
-        l[[i]] <- rbind(l[[i]][l[[i]][,1] %in% kopf,], xx, l[[i]][ !(l[[i]][,1] %in% kopf) ,])
-      } else {
-        l[[i]] <- rbind( l[[i]][l[[i]][,1] %in% kopf,], l[[i]][ !(l[[i]][,1] %in% kopf) ,])
-      }
-    }
-  }
-
-
-
-  # Warn if there are non numeric characters in data
-  # ch <- as.character(do.call(rbind, l)[,2])
-
-  ch <- character()
-  for(i in 1:length(l)){
-    ch  <- c(ch, l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2])
-    		if(length(which(c(LETTERS, letters) %in% unlist(strsplit(gsub("NA", "",paste(l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2], collapse = "")),""))))>0) cat(paste("\n", "Letter found in non-head data of plot", names(l)[i], "\n")) # warn if non numeric data is found in particular plot
-    l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2] <- gsub(" ", "", l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2]) # get rid of space (" ") in numeric data
-    l[[i]] <- l[[i]][ !(l[[i]][,1] %in% c("", " ", "   ", "    ", "     ")),]  # get rid of empty lines
-  }
-
-  if(length(grep("\\.\\.", ch))>0) stop("Non numeric element in data: .. (two points)", call. = F)
-  ch <- unique(unlist(strsplit(ch[!is.na(ch)], split = "")))
-  ch <- ch[!(ch %in% c(NA , "."))]
-  if(FALSE %in% (ch %in% as.character(0:9))) stop(paste("Non numeric element in data: ", paste(ch[!(ch %in% as.character(0:9))], collapse = ", "), " \n", sep = ""), call. = F)
-
-  # ch <- list()
-  # for(i in 1:length(l))  {  ch[[i]]  <- l[[i]][(length(kopf)+1):nrow(l[[i]]) ,]
-  # ch[[i]]$plot <- names(l)[i]
-  # }
-  # ch <- do.call(rbind, ch)
-  #
-  # if(length(grep("\\.\\.", ch$V2))>0) stop(paste("Non numeric element in data: .. (two points) in plot:", ch$plot[grep("\\.\\.", ch$V2)]), call. = F)
-  #
-  # ch$nonnum <- gsub("\\d","",ch$V2)
-  # x <- ch[!is.na(ch$nonnum) & !(ch$nonnum %in% c(".", "")),]
-  # x
-
-  # Warn if there is somewhere a Cover estimation without a species
-  x <- do.call(rbind,l)
-  x <- rownames(x)[which(is.na(x$V1) & !is.na(x$V2))]
-  if(length(x)>0) stop(paste("Species name missing in Plot: ", paste(x, collapse = ", "), " \n", sep = ""), call. = F)
-
-
-  # merge the list of plots
-  mergefunc <- function(lis, kopf, fuzzy){
-
-    x <- lis[[1]]
-    x <- x[ x$V1 %in% kopf | !is.na(x[,2]),]
-    names(x)[2] <- names(lis)[1]
-    alarm <- nrow(x)!=length(unique(x[,1]))
-    if(alarm) mess <- (paste("Error in ", names(x)[2], ", duplicated Species name: ", x[duplicated(x[,1]),1]  , "! \n", sep = ""))
-    for(i in 2:length(lis)){
-      if(alarm) stop(mess, call. = F)
-      y <- lis[[i]]
-      if(missing(kopf)) y <- y[!is.na(y[,2]),] else y <- y[ y$V1 %in% kopf | !is.na(y[,2]),]
-      names(y)[2] <- names(lis)[i]
-      alarm <- nrow(y)!=length(unique(y[,1]))
-      if(alarm) mess <- (paste("Error in ", names(y)[2], ", duplicated Species name: ", y[duplicated(y[,1]),1]  , "! \n", sep = ""))
-      if(alarm) {stop(mess, call. = F )}
-      x <- merge(x,y, by="V1", all = TRUE, sort = F)
-    }
-    # order
-    rownames(x) <- x$V1
-    x <- x[c(kopf, rownames(x[(length(kopf)+1):nrow(x),])[order(rownames(x[(length(kopf)+1):nrow(x),]))]),]
-    rownames(x) <- NULL
-
-    # use agrep fuzzy matching to find typos in the species names
-    if(fuzzy){
-      candis <- character()
-      for(i in (length(kopf)+1):nrow(x)){
-        if(!(x[i,1] %in% candis)){
-          xx <- agrep(pattern = x[i,1], x[-i,1],  value = T)
-          if(length(xx)>0) candis <- c(candis, x[i,1], xx, "\n")
-        }
-      }
-      if(length(candis)>0) {
-        mess <- paste("Warning: There might be a Typo in these names:", paste(
-          # ((c(x[,1],"/")[candis])#, incomparables = "/", fromLast = F)
-          candis, collapse = ", "), " \n")
-        # mess <- gsub(" /, /,", "", mess)
-        warning(mess, call. = F)
-        if(write.fuzzy.mistakes) write(mess, "mistakes.txt")
-        # cat( mess )
-      }
-    }
-
-    # x <- x[, !(names(x) %in% "z")]
-
-    return(x)
-
-  }
-
-  D <- mergefunc(lis = l, kopf = kopf, fuzzy=fuzzy)
-
-  # Transpose data
-  rownames(D) <- gsub(" ", "_", D[,1])
-  names(D) <- gsub("Plot_", "", names(D))
-  D[,1] <-NULL
-  D <- as.data.frame(t(D))
-  for( i in (length(kopf)+1):ncol(D)){
-    D[, i] <- as.numeric(as.character(D[,i]))
-  }
-  D$Plotcode <- rownames(D)
-  D <- D[,c("Plotcode", names(D)[-which(names(D) %in% c("Plotcode", "z"))])]
-  rownames(D) <- NULL
-
-  if(missing(outputfilename.xslx)) return(D) else write.xlsx(D, file = outputfilename.xslx)
+	
+	
+	
+	# Warn if there are non numeric characters in data
+	# ch <- as.character(do.call(rbind, l)[,2])
+	
+	ch <- character()
+	for(i in 1:length(l)){
+		ch  <- c(ch, l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2])
+		if(length(which(c(LETTERS, letters) %in% unlist(strsplit(gsub("NA", "",paste(l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2], collapse = "")),""))))>0) cat(paste("\n", "Letter found in non-head data of plot", names(l)[i], "\n")) # warn if non numeric data is found in particular plot
+		l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2] <- gsub(" ", "", l[[i]][(length(kopf)+1):nrow(l[[i]]) ,2]) # get rid of space (" ") in numeric data
+		l[[i]] <- l[[i]][ !(l[[i]][,1] %in% c("", " ", "   ", "    ", "     ")),]  # get rid of empty lines
+	}
+	
+	if(length(grep("\\.\\.", ch))>0) stop("Non numeric element in data: .. (two points)", call. = F)
+	ch <- unique(unlist(strsplit(ch[!is.na(ch)], split = "")))
+	ch <- ch[!(ch %in% c(NA , "."))]
+	if(FALSE %in% (ch %in% as.character(0:9))) stop(paste("Non numeric element in data: ", paste(ch[!(ch %in% as.character(0:9))], collapse = ", "), " \n", sep = ""), call. = F)
+	
+	# ch <- list()
+	# for(i in 1:length(l))  {  ch[[i]]  <- l[[i]][(length(kopf)+1):nrow(l[[i]]) ,]
+	# ch[[i]]$plot <- names(l)[i]
+	# }
+	# ch <- do.call(rbind, ch)
+	#
+	# if(length(grep("\\.\\.", ch$V2))>0) stop(paste("Non numeric element in data: .. (two points) in plot:", ch$plot[grep("\\.\\.", ch$V2)]), call. = F)
+	#
+	# ch$nonnum <- gsub("\\d","",ch$V2)
+	# x <- ch[!is.na(ch$nonnum) & !(ch$nonnum %in% c(".", "")),]
+	# x
+	
+	# Warn if there is somewhere a Cover estimation without a species
+	x <- do.call(rbind,l)
+	x <- rownames(x)[which(is.na(x$V1) & !is.na(x$V2))]
+	if(length(x)>0) stop(paste("Species name missing in Plot: ", paste(x, collapse = ", "), " \n", sep = ""), call. = F)
+	
+	
+	# merge the list of plots
+	mergefunc <- function(lis, kopf, fuzzy){
+		
+		x <- lis[[1]]
+		x <- x[ x$V1 %in% kopf | !is.na(x[,2]),]
+		names(x)[2] <- names(lis)[1]
+		alarm <- nrow(x)!=length(unique(x[,1]))
+		if(alarm) mess <- (paste("Error in ", names(x)[2], ", duplicated Species name: ", x[duplicated(x[,1]),1]  , "! \n", sep = ""))
+		for(i in 2:length(lis)){
+			if(alarm) stop(mess, call. = F)
+			y <- lis[[i]]
+			if(missing(kopf)) y <- y[!is.na(y[,2]),] else y <- y[ y$V1 %in% kopf | !is.na(y[,2]),]
+			names(y)[2] <- names(lis)[i]
+			alarm <- nrow(y)!=length(unique(y[,1]))
+			if(alarm) mess <- (paste("Error in ", names(y)[2], ", duplicated Species name: ", y[duplicated(y[,1]),1]  , "! \n", sep = ""))
+			if(alarm) {stop(mess, call. = F )}
+			x <- merge(x,y, by="V1", all = TRUE, sort = F)
+		}
+		# order
+		rownames(x) <- x$V1
+		x <- x[c(kopf, rownames(x[(length(kopf)+1):nrow(x),])[order(rownames(x[(length(kopf)+1):nrow(x),]))]),]
+		rownames(x) <- NULL
+		
+		# use agrep fuzzy matching to find typos in the species names
+		if(fuzzy){
+			candis <- character()
+			for(i in (length(kopf)+1):nrow(x)){
+				if(!(x[i,1] %in% candis)){
+					xx <- agrep(pattern = x[i,1], x[-i,1],  value = T)
+					if(length(xx)>0) candis <- c(candis, x[i,1], xx, "\n")
+				}
+			}
+			if(length(candis)>0) {
+				mess <- paste("Warning: There might be a Typo in these names:", paste(
+					# ((c(x[,1],"/")[candis])#, incomparables = "/", fromLast = F)
+					candis, collapse = ", "), " \n")
+				# mess <- gsub(" /, /,", "", mess)
+				warning(mess, call. = F)
+				if(write.fuzzy.mistakes) write(mess, "mistakes.txt")
+				# cat( mess )
+			}
+		}
+		
+		# x <- x[, !(names(x) %in% "z")]
+		
+		return(x)
+		
+	}
+	
+	D <- mergefunc(lis = l, kopf = kopf, fuzzy=fuzzy)
+	
+	# Transpose data
+	
+	if(length(gsub(" ", "_", D[,1])[duplicated(gsub(" ", "_", D[,1]))])>0) cat("\n\nAchtung: Leerschläge in Artennamen\n\n" )
+	rownames(D) <- gsub(" ", "_", D[,1])
+	names(D) <- gsub("Plot_", "", names(D))
+	D[,1] <-NULL
+	D <- as.data.frame(t(D))
+	for( i in (length(kopf)+1):ncol(D)){
+		D[, i] <- as.numeric(as.character(D[,i]))
+	}
+	D$Plotcode <- rownames(D)
+	D <- D[,c("Plotcode", names(D)[-which(names(D) %in% c("Plotcode", "z"))])]
+	rownames(D) <- NULL
+	
+	if(missing(outputfilename.xslx)) return(D) else write.xlsx(D, file = outputfilename.xslx)
 }
 
 # D <- eingabeformular2tabelle(inputfilename.xlsx = c("Eingabeformular_Grünland_HF_Alb.xlsx", "Eingabeformular_Grünland_HF_Hai.xlsx", "Eingabeformular_Grünland_HF_Sch.xlsx"), kopf = 1:14, fuzzy = T)
@@ -848,4 +856,3 @@ sort.as.funcgroup.data23 <- function(df, info=read.xlsx("../Aufnahmebögen2023/E
 	r <- as.data.frame(do.call(cbind, l))
 	return(r)
 }
-
