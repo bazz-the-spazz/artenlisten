@@ -303,7 +303,7 @@ eingabeformular <- function(daten, explo, kopf, wald=F, filename = "eingabeformu
 
 
 ## read formular and create a big, unified table
-eingabeformular2tabelle <- function( inputfilename.xlsx, input.data, kopf=character(), outputfilename.xslx, fuzzy=T, write.fuzzy.mistakes= FALSE, wald=FALSE){
+eingabeformular2tabelle <- function( inputfilename.xlsx, input.data, kopf=character(), outputfilename.xslx, fuzzy=T, write.fuzzy.mistakes= FALSE, wald=FALSE, layervariabel="Layer"){
 	
 	if(!missing(inputfilename.xlsx)){
 		require(openxlsx)
@@ -375,8 +375,8 @@ eingabeformular2tabelle <- function( inputfilename.xlsx, input.data, kopf=charac
 			for(j in 2:ncol(d)){
 				ll[[I]] <- data.frame(V1= l[[i]][,1], V2= l[[i]][,j])
 				ll[[I]] <- ll[[I]][!is.na(ll[[I]]$V1),]
-				names(ll)[I] <- paste( names(l)[i], ll[[I]][ll[[I]]$V1=="Layer"  ,2], sep= "_")
-				ll[[I]] <- ll[[I]][-which(ll[[I]]$V1=="Layer"),]
+				names(ll)[I] <- paste( names(l)[i], ll[[I]][ll[[I]]$V1==layervariabel  ,2], sep= "_")
+				ll[[I]] <- ll[[I]][-which(ll[[I]]$V1==layervariabel),]
 				I <- I+1
 			}
 		}
