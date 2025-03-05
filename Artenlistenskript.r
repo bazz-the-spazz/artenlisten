@@ -286,7 +286,7 @@ eingabeformular <- function(daten, explo, kopf, wald=F, transekte,  filename = "
 					 paste("Plot_", names(d)[i], sep = ""),
 					 if(wald) "Layer",
 					 if(transekt) "Transekt",
-					 # if(!missing(kopf)) kopf,
+					 if(!missing(kopf)) kopf,
 					 "",
 					 if(new.order) d[d[,i]!="NEW.ORDER",i] else if(transekt) unique(d[d[,i]!="" & d[,i]!="\\textbf{Arten}",i]) else sort(unique(d[d[,i]!="",i])),
 					 rep("", n.empty.rows)
