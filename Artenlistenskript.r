@@ -52,6 +52,7 @@ artenliste <- function(daten, kopf="kopf.md", titel=format(Sys.time(), "%b %Y"),
 	for (i in 1:ncol(data)){ #loop for each column (=each Plot) of the data
 		
 		size <- fontsize      # this is the latex command for the font size (eg. \\tiny, \\huge)
+		sorto <- T # should species be sorted
 		header <- "\\begin{tabularx}{\\textwidth}{|l|X|l|X|} \\hline"    # this is the header for the table for the species list
 		if(wald) header <- c("\\begin{tabularx}{\\textwidth}{|l|X|X|X|X|} \\hline",
 												 "\\textbf{Arten} \\phantom{ChrysospleniumChrysospleniumChrysosplen} & \\textbf{K} & \\textbf{S}\\tiny{<5m} & \\textbf{B1}\\tiny{<10} & \\textbf{B2}\\tiny{>10m} \\\\\\hline") # this is the wald header
